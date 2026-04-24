@@ -12,15 +12,14 @@ interface NewsletterFormProps {
 
 /**
  * Formulaire newsletter Atelier Frisson.
- *
- * V1 : validation client + feedback visuel. L'envoi vers Klaviyo sera
- * branché en Sprint 3 (action serveur /api/newsletter/subscribe qui
- * pushera vers `newsletter_subscribers` + Klaviyo via KLAVIYO_PRIVATE_KEY).
+ * POST vers `/api/newsletter/subscribe` qui persiste dans Supabase
+ * `newsletter_subscribers`, track Klaviyo, et envoie l'email de bienvenue.
  */
 export function NewsletterForm({ source = 'footer', className }: NewsletterFormProps) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,7 +29,6 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
       setErrorMessage('Merci d’indiquer votre adresse e-mail.');
       return;
     }
-    // Validation RFC 5322 simplifiée — suffisante côté client.
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setState('error');
       setErrorMessage('Cette adresse ne semble pas valide.');
@@ -39,14 +37,24 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
     setState('submitting');
     setErrorMessage(null);
     try {
-      // TODO Sprint 3 — remplacer par fetch('/api/newsletter/subscribe').
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      console.info('[newsletter] subscribe queued', { email: trimmed, source });
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email: trimmed, source }),
+      });
+      const data: { ok: boolean; message?: string } = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.message ?? 'Échec de l’inscription.');
+      }
       setState('success');
+      setSuccessMessage(data.message ?? 'Merci. Vous recevrez nos prochaines parutions.');
       setEmail('');
-    } catch {
+    } catch (err) {
       setState('error');
-      setErrorMessage('Un instant — réessayez dans quelques secondes.');
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Un instant — réessayez dans quelques secondes.',
+      );
     }
   }
 
@@ -54,15 +62,14 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
     return (
       <div
         className={cn(
-          'flex items-center gap-3 border border-or/40 bg-or/5 px-5 py-4 text-ivoire',
+          'border-or/40 bg-or/5 text-ivoire flex items-start gap-3 border px-5 py-4',
           className,
         )}
         role="status"
+        aria-live="polite"
       >
-        <Check className="size-4 text-or" aria-hidden="true" />
-        <p className="font-italic-editorial text-sm">
-          Merci. Vous recevrez nos prochaines parutions.
-        </p>
+        <Check className="text-or size-4 shrink-0" aria-hidden="true" />
+        <p className="font-italic-editorial text-sm">{successMessage}</p>
       </div>
     );
   }
@@ -74,7 +81,7 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
       </label>
       <div
         className={cn(
-          'flex items-center gap-2 border-b border-ivoire/30 pb-3',
+          'border-ivoire/30 flex items-center gap-2 border-b pb-3',
           state === 'error' && 'border-rouge-light/80',
           'focus-within:border-or',
         )}
@@ -91,7 +98,7 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
           }}
           placeholder="votre adresse e-mail"
           className={cn(
-            'flex-1 border-0 bg-transparent px-0 text-base text-ivoire placeholder:text-ivoire/40',
+            'text-ivoire placeholder:text-ivoire/40 flex-1 border-0 bg-transparent px-0 text-base',
             'outline-none focus-visible:outline-none',
           )}
           aria-invalid={state === 'error'}
@@ -101,7 +108,7 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
           type="submit"
           disabled={state === 'submitting'}
           className={cn(
-            'ui-caps inline-flex items-center gap-2 text-or transition-colors',
+            'ui-caps text-or inline-flex items-center gap-2 transition-colors',
             'hover:text-or-light disabled:opacity-60',
           )}
         >
@@ -110,13 +117,13 @@ export function NewsletterForm({ source = 'footer', className }: NewsletterFormP
         </button>
       </div>
       {errorMessage ? (
-        <p id="newsletter-error" className="mt-2 text-xs text-rouge-light" role="alert">
+        <p id="newsletter-error" className="text-rouge-light mt-2 text-xs" role="alert">
           {errorMessage}
         </p>
       ) : (
-        <p className="mt-3 text-xs text-ivoire/45">
+        <p className="text-ivoire/45 mt-3 text-xs">
           Vous pouvez vous désabonner à tout moment. Consultez notre{' '}
-          <a href="/confidentialite" className="underline underline-offset-2 hover:text-or">
+          <a href="/confidentialite" className="hover:text-or underline underline-offset-2">
             politique de confidentialité
           </a>
           .

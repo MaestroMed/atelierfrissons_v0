@@ -19,16 +19,17 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'fr-FR',
     icons: [
       {
-        src: '/icon.png',
+        // app/icon.tsx est servi à /icon (sans extension par Next 16)
+        src: '/icon',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/icon-maskable.png',
-        sizes: '512x512',
+        src: '/apple-icon',
+        sizes: '180x180',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
     ],
   };

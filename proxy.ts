@@ -10,21 +10,29 @@ import {
 } from '@/lib/security/rate-limit';
 
 /**
- * Middleware racine Atelier Frisson.
+ * Proxy racine Atelier Frisson (Next.js 16 convention, ex-`middleware.ts`).
  *
  * Responsabilités (ordre d'exécution) :
  *  1. Rate-limit sur routes sensibles (auth 5/min, forge 10/h, api 100/min)
  *  2. Génère un nonce CSP et compose la politique
- *  3. Injecte `x-nonce` dans les headers de requête (Next.js le lit pour
- *     injecter automatiquement le nonce sur ses scripts inline SSR)
+ *  3. Injecte `x-nonce` dans les headers de requête via
+ *     `NextResponse.next({ request: { headers: requestHeaders } })` — Next.js
+ *     lit ce header pour ajouter automatiquement l'attribut `nonce` sur ses
+ *     scripts inline SSR, ce qui active `strict-dynamic` côté navigateur.
  *  4. Rafraîchit la session Supabase (getUser() valide le JWT)
- *  5. Attache les headers sécurité à la réponse (CSP, HSTS, XFO, Referrer)
+ *  5. Attache les headers sécurité à la réponse (CSP, HSTS, XFO, Referrer,
+ *     Permissions-Policy)
  *
- * Les headers statiques sont aussi dans next.config.ts (defense in depth).
- * Ici on ajoute ce qui est dynamique (nonce différent à chaque requête).
+ * Les headers statiques sont aussi dans `next.config.ts` (defense in depth) —
+ * ici on ajoute uniquement ce qui est dynamique (nonce différent par requête).
+ *
+ * Sprint 1-7 historique : nous avions dû retirer `{ request: { headers } }`
+ * et `'strict-dynamic'` suite à un bug suspecté de Set-Cookie propagation.
+ * Root cause identifiée par la suite (client/server RSC boundary — cf. fix
+ * age-gate Sprint 1). Ces optimisations sont maintenant restaurées.
  */
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── 1. Rate limit — routes sensibles ────────────────────────────────
@@ -41,20 +49,18 @@ export async function middleware(request: NextRequest) {
     if (!result.success) return tooManyRequests(result);
   }
 
-  // ── 2. CSP nonce + rafraîchit session Supabase ──────────────────────
+  // ── 2. CSP nonce — propagation vers les scripts inline SSR de Next ──
   const nonce = generateNonce();
   const csp = buildCsp(nonce);
 
-  // ⚠️ Important : on utilise `NextResponse.next()` SANS l'option
-  // `request: { headers }` (qui était utilisée pour propager `x-nonce` en
-  // upstream). En Next 16, cette option semble interférer avec les
-  // Set-Cookie émis par les route handlers / server actions en aval
-  // (le proxy crée un nouveau response qui n'hérite pas correctement des
-  // cookies de l'inner response). On accepte de perdre l'auto-injection du
-  // nonce sur les scripts inline Next pour l'instant — sera réglé en
-  // Sprint 7 (migration `middleware.ts` → `proxy.ts` + audit nonce).
-  let response = NextResponse.next();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
 
+  let response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  // ── 3. Rafraîchit la session Supabase ───────────────────────────────
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (supabaseUrl && supabaseAnon) {
@@ -65,20 +71,21 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next();
+          response = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
         },
       },
     });
-    // Critique : getUser() valide le JWT et déclenche le refresh token si expiré.
+    // Critique : getUser() valide le JWT et déclenche le refresh si expiré.
+    // Ne pas remplacer par getSession() (qui ne valide pas la signature).
     await supabase.auth.getUser();
   }
 
-  // ── 3. Security headers sur la réponse ──────────────────────────────
-  // Important : n'utilise JAMAIS `response.cookies.set/delete` ici sans raison
-  // — cela interfère avec les Set-Cookie émis par les route handlers en aval.
+  // ── 4. Security headers sur la réponse sortante ─────────────────────
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('x-nonce', nonce);
   response.headers.set('X-Content-Type-Options', 'nosniff');
