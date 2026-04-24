@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { LegalLayout } from '@/components/legal/LegalLayout';
 import { SHIPPING_METHODS } from '@/lib/checkout/schemas';
 import { formatPriceCents } from '@/lib/format';
@@ -51,7 +52,7 @@ export default function LivraisonPage() {
       <h2>Suivi de commande</h2>
       <p>
         Un email avec le numéro de suivi vous est envoyé dès l’expédition. Suivi temps réel
-        disponible dans votre <a href="/compte/commandes">espace personnel</a>.
+        disponible dans votre <Link href="/compte/commandes">espace personnel</Link>.
       </p>
     </LegalLayout>
   );

@@ -5,6 +5,7 @@ import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
 import { JsonLd } from '@/components/shared/JsonLd';
+import { ScrollProgress } from '@/components/shared/ScrollProgress';
 import { buildArticleSchema } from '@/lib/seo/structured-data';
 import { getMockGuideBySlug, getMockGuides } from '@/lib/mock/articles';
 import { formatDate } from '@/lib/format';
@@ -35,6 +36,7 @@ export default async function GuidePilierPage({ params }: PageProps) {
 
   return (
     <>
+      <ScrollProgress targetSelector="article.prose-article" />
       <JsonLd
         data={buildArticleSchema({
           title: guide.title,

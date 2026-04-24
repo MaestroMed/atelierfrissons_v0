@@ -8,6 +8,7 @@ import { ProductGallery } from '@/components/shop/ProductGallery';
 import { PriceTag } from '@/components/shop/PriceTag';
 import { StockBadge } from '@/components/shop/StockBadge';
 import { AddToCartButton } from '@/components/shop/AddToCartButton';
+import { StickyProductBar } from '@/components/shop/StickyProductBar';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
 import { RelatedProducts } from '@/components/shop/RelatedProducts';
@@ -285,6 +286,9 @@ export default async function ProductPage({ params }: PageProps) {
 
       {/* Related products */}
       <RelatedProducts products={related} />
+
+      {/* Sticky mobile CTA — apparait au scroll quand le bouton principal n'est plus visible */}
+      <StickyProductBar product={product} />
     </>
   );
 }

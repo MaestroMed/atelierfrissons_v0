@@ -6,6 +6,7 @@ import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
 import { JsonLd } from '@/components/shared/JsonLd';
+import { ScrollProgress } from '@/components/shared/ScrollProgress';
 import { buildArticleSchema } from '@/lib/seo/structured-data';
 import { ProductCard } from '@/components/shop/ProductCard';
 import {
@@ -56,6 +57,7 @@ export default async function RituelArticlePage({ params }: PageProps) {
 
   return (
     <>
+      <ScrollProgress targetSelector="article.prose-article" />
       <JsonLd
         data={buildArticleSchema({
           title: article.title,
