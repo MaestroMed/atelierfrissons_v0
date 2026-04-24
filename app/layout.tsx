@@ -8,6 +8,7 @@ import { AGE_GATE_COOKIE } from '@/lib/auth/age-gate';
 import { CookieBanner } from '@/components/layout/CookieBanner';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { getCartSnapshot } from '@/lib/cart/store';
+import { getMockFeaturedProducts } from '@/lib/mock/products';
 import { Toaster } from '@/components/ui/sonner';
 import { JsonLd } from '@/components/shared/JsonLd';
 import { BackToTop } from '@/components/shared/BackToTop';
@@ -137,6 +138,15 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const ageVerified = cookieStore.get(AGE_GATE_COOKIE)?.value === '1';
   const cartSnapshot = await getCartSnapshot();
+  // Pre-compute upsell candidates côté server (featured produits, 6 max)
+  // — le drawer filtrera ceux déjà dans le panier à chaque rendu.
+  const upsellCandidates = getMockFeaturedProducts(6).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    tagline: p.tagline,
+    priceCents: p.priceCents,
+    collection: p.collection,
+  }));
 
   return (
     <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
@@ -156,7 +166,7 @@ export default async function RootLayout({
           {children}
         </main>
         <Footer />
-        <CartDrawer initialSnapshot={cartSnapshot} />
+        <CartDrawer initialSnapshot={cartSnapshot} upsellCandidates={upsellCandidates} />
         <BackToTop />
         <CommandPalette />
         <Toaster position="bottom-center" />

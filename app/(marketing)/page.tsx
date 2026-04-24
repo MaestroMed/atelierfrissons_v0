@@ -277,7 +277,11 @@ export default function HomePage() {
             </p>
           </ScrollReveal>
           <ScrollReveal delay={120}>
-            <NewsletterForm source="homepage" className="mx-auto mt-10 max-w-xl text-left" />
+            <NewsletterForm
+              source="homepage"
+              tone="light"
+              className="mx-auto mt-10 max-w-xl text-left"
+            />
           </ScrollReveal>
         </Container>
       </section>

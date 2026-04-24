@@ -6,6 +6,10 @@ import {
   type OrderConfirmationEmailProps,
 } from '@/emails/OrderConfirmationEmail';
 import { WelcomeEmail, type WelcomeEmailProps } from '@/emails/WelcomeEmail';
+import {
+  NewsletterConfirmEmail,
+  type NewsletterConfirmEmailProps,
+} from '@/emails/NewsletterConfirmEmail';
 
 /**
  * Wrappers Resend pour chaque template — server-only, gracieux si pas de clé.
@@ -43,6 +47,21 @@ export async function sendWelcome(to: string, props: WelcomeEmailProps): Promise
   return sendRaw({
     to,
     subject: 'Bienvenue chez Atelier Frisson',
+    html,
+    text,
+  });
+}
+
+/** Email Double Opt-In newsletter — envoyé après l'inscription au formulaire. */
+export async function sendNewsletterConfirmation(
+  to: string,
+  props: NewsletterConfirmEmailProps,
+): Promise<SendResult> {
+  const html = await render(NewsletterConfirmEmail(props));
+  const text = await render(NewsletterConfirmEmail(props), { plainText: true });
+  return sendRaw({
+    to,
+    subject: 'Confirmez votre inscription à notre correspondance',
     html,
     text,
   });

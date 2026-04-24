@@ -1,21 +1,37 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ShoppingBag } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Plus } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { getCartSnapshotAction } from '@/lib/cart/actions';
+import { addToCartAction, getCartSnapshotAction } from '@/lib/cart/actions';
 import type { CartSnapshot } from '@/lib/cart/types';
 import { EMPTY_CART } from '@/lib/cart/types';
 import { Fleuron } from '@/components/layout/Fleuron';
+import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
 import { cn } from '@/lib/utils';
 import { formatPriceCents, pluralize } from '@/lib/format';
 import { CartItem } from './CartItem';
 import { PromoCodeField } from './PromoCodeField';
 
+/** Item minimal côté client pour alimenter la section mini-upsell. */
+export interface CartUpsellCandidate {
+  slug: string;
+  name: string;
+  tagline: string | null;
+  priceCents: number;
+  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+}
+
 interface CartDrawerProps {
   /** Snapshot initial du panier (depuis le Server Component Header). */
   initialSnapshot: CartSnapshot;
+  /**
+   * Liste de candidats upsell pré-calculée côté serveur (tous les produits
+   * featured). Le drawer filtrera ceux déjà dans le panier et affichera
+   * les 2 premiers restants dans la section « Vous pourriez aussi aimer ».
+   */
+  upsellCandidates?: readonly CartUpsellCandidate[];
 }
 
 /**
@@ -25,10 +41,17 @@ interface CartDrawerProps {
  * Re-fetch le snapshot à chaque ouverture (et sur event `af:cart-updated`)
  * pour rester synchro même après mutations cross-tab.
  */
-export function CartDrawer({ initialSnapshot }: CartDrawerProps) {
+export function CartDrawer({ initialSnapshot, upsellCandidates = [] }: CartDrawerProps) {
   const [open, setOpen] = useState(false);
   const [snapshot, setSnapshot] = useState<CartSnapshot>(initialSnapshot);
   const [isRefreshing, startRefresh] = useTransition();
+
+  // Upsells : 2 premiers candidats qui ne sont pas déjà dans le panier
+  const upsells = useMemo(() => {
+    if (upsellCandidates.length === 0) return [];
+    const inCart = new Set(snapshot.items.map((item) => item.slug));
+    return upsellCandidates.filter((c) => !inCart.has(c.slug)).slice(0, 2);
+  }, [upsellCandidates, snapshot.items]);
 
   const refresh = useCallback(() => {
     startRefresh(async () => {
@@ -116,13 +139,37 @@ export function CartDrawer({ initialSnapshot }: CartDrawerProps) {
             {isEmpty ? (
               <EmptyState />
             ) : (
-              <ul className="flex flex-col gap-5">
-                {snapshot.items.map((item) => (
-                  <li key={item.productId}>
-                    <CartItem item={item} compact />
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="flex flex-col gap-5">
+                  {snapshot.items.map((item) => (
+                    <li key={item.productId}>
+                      <CartItem item={item} compact />
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Mini-upsell : affiché quand panier < 3 items pour re-engagement doux */}
+                {snapshot.itemCount < 3 && upsells.length > 0 ? (
+                  <section
+                    aria-labelledby="upsell-heading"
+                    className="border-encre/10 mt-8 border-t pt-6"
+                  >
+                    <p
+                      id="upsell-heading"
+                      className="ui-caps text-or-dark mb-4 flex items-center gap-2"
+                    >
+                      Vous pourriez aussi aimer
+                    </p>
+                    <ul className="flex flex-col gap-3">
+                      {upsells.map((item) => (
+                        <li key={item.slug}>
+                          <UpsellCard item={item} onAdded={() => refresh()} />
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
+              </>
             )}
           </div>
 
@@ -196,6 +243,77 @@ function EmptyState() {
       >
         Découvrir la collection
       </Link>
+    </div>
+  );
+}
+
+function UpsellCard({ item, onAdded }: { item: CartUpsellCandidate; onAdded: () => void }) {
+  const [pending, startTransition] = useTransition();
+  const isNuit = item.collection === 'nuit';
+
+  const handleAdd = () => {
+    startTransition(async () => {
+      try {
+        await addToCartAction(item.slug, 1);
+        onAdded();
+        window.dispatchEvent(new CustomEvent('af:cart-updated'));
+      } catch (err) {
+        console.error('[CartDrawer upsell] add failed:', err);
+      }
+    });
+  };
+
+  return (
+    <div
+      className={cn(
+        'border-encre/10 bg-ivoire flex items-center gap-3 border p-3',
+        'hover:border-or transition-colors',
+      )}
+    >
+      <Link
+        href={`/produit/${item.slug}`}
+        className={cn(
+          'flex size-14 shrink-0 items-center justify-center overflow-hidden border',
+          isNuit ? 'border-or/30 bg-rouge' : 'border-or/20 bg-ivoire-light',
+        )}
+        aria-label={`Voir ${item.name}`}
+      >
+        <ProductSilhouette variant={isNuit ? 'nuit' : 'jour'} className="h-[70%]" />
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <Link
+          href={`/produit/${item.slug}`}
+          className="font-display text-noir hover:text-or-dark truncate text-sm font-medium transition-colors"
+        >
+          {item.name}
+        </Link>
+        {item.tagline ? (
+          <p className="font-italic-editorial text-encre/60 truncate text-xs">{item.tagline}</p>
+        ) : null}
+        <p className="tabular text-encre text-sm font-medium">
+          {formatPriceCents(item.priceCents)}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={handleAdd}
+        disabled={pending}
+        aria-label={`Ajouter ${item.name} au panier`}
+        className={cn(
+          'inline-flex size-9 shrink-0 items-center justify-center border transition-colors',
+          'border-noir/20 text-noir hover:bg-noir hover:text-ivoire hover:border-noir',
+          'disabled:cursor-wait disabled:opacity-60',
+        )}
+      >
+        {pending ? (
+          <span
+            aria-hidden="true"
+            className="size-3 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+        ) : (
+          <Plus className="size-4" aria-hidden="true" strokeWidth={1.5} />
+        )}
+      </button>
     </div>
   );
 }
