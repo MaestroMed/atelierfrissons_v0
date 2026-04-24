@@ -9,6 +9,8 @@ import { CookieBanner } from '@/components/layout/CookieBanner';
 import { CartDrawer } from '@/components/shop/CartDrawer';
 import { getCartSnapshot } from '@/lib/cart/store';
 import { Toaster } from '@/components/ui/sonner';
+import { JsonLd } from '@/components/shared/JsonLd';
+import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo/structured-data';
 import './globals.css';
 
 /**
@@ -136,6 +138,10 @@ export default async function RootLayout({
 
   return (
     <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
+      <head>
+        <JsonLd data={buildOrganizationSchema()} />
+        <JsonLd data={buildWebsiteSchema()} />
+      </head>
       <body className="bg-ivoire text-encre flex min-h-dvh flex-col antialiased">
         <a
           href="#contenu-principal"
