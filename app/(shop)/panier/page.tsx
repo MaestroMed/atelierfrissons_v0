@@ -5,6 +5,7 @@ import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
 import { CartItem } from '@/components/shop/CartItem';
+import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { getCartSnapshot } from '@/lib/cart/store';
 import { formatPriceCents, pluralize } from '@/lib/format';
 
@@ -43,19 +44,29 @@ export default async function PanierPage() {
       </header>
 
       {isEmpty ? (
-        <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-16 text-center">
-          <ShoppingBag className="text-encre/25 size-12 stroke-[1.2]" aria-hidden="true" />
-          <p className="font-italic-editorial text-encre/70 text-lg">
-            Votre panier est en attente d’un premier rituel.
-          </p>
-          <Link
-            href="/boutique"
-            className="ui-caps border-noir text-noir hover:bg-noir hover:text-ivoire inline-flex items-center gap-3 border px-8 py-3.5 transition-colors"
-          >
-            Découvrir la collection
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
+        <>
+          <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-16 text-center">
+            <ShoppingBag className="text-encre/25 size-12 stroke-[1.2]" aria-hidden="true" />
+            <p className="font-italic-editorial text-encre/70 text-lg">
+              Votre panier est en attente d’un premier rituel.
+            </p>
+            <Link
+              href="/boutique"
+              className="ui-caps border-noir text-noir hover:bg-noir hover:text-ivoire inline-flex items-center gap-3 border px-8 py-3.5 transition-colors"
+            >
+              Découvrir la collection
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+          {/* Récemment consultés — re-engagement doux en bas du panier vide */}
+          <div className="-mx-6 mt-8 md:-mx-10">
+            <RecentlyViewedSection
+              title="Peut-être un de ces objets ?"
+              subtitle="Repris depuis votre navigation récente."
+              background="light"
+            />
+          </div>
+        </>
       ) : (
         <div className="grid gap-12 lg:grid-cols-[1.7fr_1fr] lg:gap-16">
           {/* Liste items */}

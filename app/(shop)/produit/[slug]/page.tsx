@@ -10,6 +10,8 @@ import { StockBadge } from '@/components/shop/StockBadge';
 import { AddToCartButton } from '@/components/shop/AddToCartButton';
 import { WishlistButton } from '@/components/shop/WishlistButton';
 import { StickyProductBar } from '@/components/shop/StickyProductBar';
+import { RecentlyViewedTracker } from '@/components/shop/RecentlyViewedTracker';
+import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
 import { RelatedProducts } from '@/components/shop/RelatedProducts';
@@ -296,6 +298,26 @@ export default async function ProductPage({ params }: PageProps) {
 
       {/* Related products */}
       <RelatedProducts products={related} />
+
+      {/* Récemment consultés — exclut le produit courant, exclut le fond rouge pour éviter la collision */}
+      <RecentlyViewedSection
+        excludeSlug={product.slug}
+        background="light"
+        subtitle="Les objets que vous avez récemment ouverts."
+      />
+
+      {/* Tracker invisible — pousse le produit courant dans localStorage au mount */}
+      <RecentlyViewedTracker
+        item={{
+          slug: product.slug,
+          name: product.name,
+          tagline: product.tagline ?? null,
+          priceCents: product.priceCents,
+          imageUrl: product.images[0]?.url ?? null,
+          imageAlt: product.images[0]?.alt ?? null,
+          collection: product.collection,
+        }}
+      />
 
       {/* Sticky mobile CTA — apparait au scroll quand le bouton principal n'est plus visible */}
       <StickyProductBar product={product} />

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, Sparkle } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
@@ -8,6 +8,18 @@ import { ProductGrid } from '@/components/shop/ProductGrid';
 import { getMockProducts } from '@/lib/mock/products';
 import { getMockArticles } from '@/lib/mock/articles';
 import { sanitizeSearchQuery } from '@/lib/security/sanitize';
+
+/** Suggestions de recherche curées — guident l'utilisateur quand la recherche est vide. */
+const POPULAR_QUERIES: readonly { label: string; query: string }[] = [
+  { label: 'Silicone médical', query: 'silicone' },
+  { label: 'Premier Frisson', query: 'premier frisson' },
+  { label: 'Collection NUIT', query: 'nuit' },
+  { label: 'Rituel lent', query: 'rituel' },
+  { label: 'Couple', query: 'couple' },
+  { label: 'Ménopause', query: 'menopause' },
+  { label: 'Vibration douce', query: 'vibration' },
+  { label: 'Lubrifiant', query: 'lubrifiant' },
+] as const;
 
 export const metadata: Metadata = {
   title: 'Recherche',
@@ -90,11 +102,62 @@ export default async function RecherchePage({ searchParams }: PageProps) {
 
       <Container className="py-12 md:py-16">
         {!query ? (
-          <div className="mx-auto max-w-md text-center">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 text-center">
             <p className="font-italic-editorial text-encre/70 text-lg">
-              Tapez un mot-clé pour explorer la maison — « silicone », « rituel lent », « Premier
-              Frisson », « ménopause »…
+              Tapez un mot-clé pour explorer la maison — objets, articles, rituels.
             </p>
+            <div className="flex flex-col items-center gap-4">
+              <p className="ui-caps text-or-dark">Recherches populaires</p>
+              <ul className="flex flex-wrap items-center justify-center gap-2">
+                {POPULAR_QUERIES.map((q) => (
+                  <li key={q.query}>
+                    <Link
+                      href={`/recherche?q=${encodeURIComponent(q.query)}`}
+                      className="ui-caps border-or/30 text-encre/75 hover:border-noir hover:bg-noir hover:text-ivoire inline-flex items-center border px-3 py-1.5 text-[11px] transition-colors"
+                    >
+                      {q.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ) : matchedProducts.length === 0 && matchedArticles.length === 0 ? (
+          <div className="mx-auto flex max-w-xl flex-col items-center gap-6 py-10 text-center">
+            <Sparkle className="text-or/70 size-6" aria-hidden="true" strokeWidth={1.5} />
+            <p className="font-italic-editorial text-encre/80 text-lg md:text-xl">
+              Aucune correspondance pour «&nbsp;{query}&nbsp;».
+            </p>
+            <p className="text-encre/65 text-sm">
+              Peut-être une faute de frappe ? Essayez un terme plus large, ou explorez ces pistes :
+            </p>
+            <ul className="flex flex-wrap items-center justify-center gap-2">
+              {POPULAR_QUERIES.slice(0, 6).map((q) => (
+                <li key={q.query}>
+                  <Link
+                    href={`/recherche?q=${encodeURIComponent(q.query)}`}
+                    className="ui-caps border-or/30 text-encre/75 hover:border-noir hover:bg-noir hover:text-ivoire inline-flex items-center border px-3 py-1.5 text-[11px] transition-colors"
+                  >
+                    {q.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2 flex flex-col items-center gap-3 sm:flex-row">
+              <Link
+                href="/boutique"
+                className="ui-caps border-noir text-noir hover:bg-noir hover:text-ivoire inline-flex items-center gap-2 border px-5 py-2.5 transition-colors"
+              >
+                Parcourir la boutique
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/rituels"
+                className="ui-caps text-or-dark hover:text-or inline-flex items-center gap-2 underline underline-offset-4"
+              >
+                Ou lire le journal
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-16">

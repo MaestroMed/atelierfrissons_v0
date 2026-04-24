@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Package, MapPin, Bell, ShieldCheck } from 'lucide-react';
 import { getSession } from '@/lib/auth/session';
+import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 
 export const metadata: Metadata = {
   title: 'Tableau de bord',
@@ -79,6 +80,16 @@ export default async function CompteDashboard() {
           icon={ShieldCheck}
         />
       </section>
+
+      {/* Récemment consultés — variante clearable pour l'espace perso */}
+      <div className="-mx-6 md:-mx-10">
+        <RecentlyViewedSection
+          title="Vos dernières visites"
+          subtitle="Pour reprendre le fil au prochain moment qui vous appartient."
+          background="default"
+          clearable
+        />
+      </div>
     </div>
   );
 }
