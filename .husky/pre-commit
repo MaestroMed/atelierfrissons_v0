@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Atelier Frisson — hook pré-commit
+# 1) typecheck global (TS est holistique — une modif peut casser ailleurs)
+# 2) lint-staged : ESLint + Prettier sur les fichiers staged uniquement
+#
+# Si le typecheck devient trop long, passer en --incremental (déjà activé
+# dans tsconfig.json) ou cacher via un tsbuildinfo local.
+echo "▸ typecheck..."
+pnpm typecheck || exit 1
+
+echo "▸ lint-staged..."
+pnpm exec lint-staged || exit 1
+
+echo "✓ pre-commit OK"

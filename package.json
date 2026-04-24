@@ -22,7 +22,20 @@
     "forge:import": "tsx scripts/forge-import.ts",
     "forge:validate": "tsx scripts/forge-validate.ts",
     "analyze": "ANALYZE=true next build",
-    "prepare": "echo 'TODO: husky install (Etape 7)'"
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,jsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,mdx,css,html,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -67,6 +80,8 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "0.0.0-insiders.f7d2598",
     "tailwindcss": "^4",
