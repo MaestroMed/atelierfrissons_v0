@@ -1,14 +1,13 @@
 'use client';
 
-import { useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Wordmark } from './Wordmark';
 import { Fleuron } from './Fleuron';
 import { cn } from '@/lib/utils';
 
-/** Cookie name — aligné avec le check serveur dans app/layout.tsx et middleware. */
-export const AGE_GATE_COOKIE = 'af_age_verified';
-const AGE_GATE_MAX_AGE_DAYS = 30;
+// Note : la constante AGE_GATE_COOKIE vit dans `lib/auth/age-gate.ts`
+// pour pouvoir traverser la frontière server/client RSC. Voir le commentaire
+// dans ce fichier pour le détail du bug évité.
 
 interface AgeGateProps {
   /** URL de sortie si l'utilisateur n'est pas majeur (défaut : google.com). */
@@ -22,40 +21,44 @@ interface AgeGateProps {
  * `app/layout.tsx` via lecture de `cookies()` côté serveur — donc **pas de
  * FOUC** : si la cookie est présente, l'utilisateur ne voit jamais la modale.
  *
- * Phase 1 (actuelle) : self-declaration (« J'ai 18 ans ou plus ») — suffisant
- * en dev/staging, **insuffisant pour production** à partir de juin 2026.
- * Phase 2 (pré-prod) : intégration VerifyMy ou AnonymAGE pour double
- * anonymat Arcom — voir CLAUDE.md §11.7 et TODO ci-dessous.
+ * Flow accept :
+ *   1. POST /api/auth/verify-age (Route Handler) qui pose `Set-Cookie`
+ *      `af_age_verified=1` — HTTP standard, toujours propagé.
+ *   2. `window.location.reload()` déclenche un GET complet qui porte le
+ *      cookie. Le layout serveur le lit et démonte l'AgeGate.
  *
- * Événement `af:age-verified` dispatché sur `window` après validation pour
- * que les scripts analytics puissent réagir.
+ * On a préféré le Route Handler au Server Action + redirect() : avec
+ * `useTransition`, Next 16 traite `redirect()` comme une soft-nav RSC et
+ * le Set-Cookie est mal propagé vers le rendu suivant (cf. docs proxy.ts).
+ *
+ * Phase 1 (actuelle) : self-declaration — suffisant en dev/staging,
+ * insuffisant pour production à partir de juin 2026. Phase 2 (pré-prod) :
+ * intégration VerifyMy ou AnonymAGE (double anonymat Arcom prod-ready).
  */
 export function AgeGate({ exitUrl = 'https://www.google.com' }: AgeGateProps = {}) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
-  const accept = () => {
-    const secure = typeof window !== 'undefined' && window.location.protocol === 'https:';
-    const maxAge = AGE_GATE_MAX_AGE_DAYS * 24 * 60 * 60;
-    document.cookie = [
-      `${AGE_GATE_COOKIE}=1`,
-      'path=/',
-      `max-age=${maxAge}`,
-      'SameSite=Lax',
-      secure ? 'Secure' : '',
-    ]
-      .filter(Boolean)
-      .join('; ');
-
-    // Notifie les scripts analytics (ex: PostHog, Klaviyo) de l'activation.
-    window.dispatchEvent(new CustomEvent('af:age-verified', { detail: { method: 'self_declared' } }));
-
-    // TODO Sprint 3 : POST /api/auth/verify-age pour log audit + préparer
-    // l'intégration VerifyMy (double anonymat Arcom prod-ready).
-
-    startTransition(() => {
-      router.refresh();
-    });
+  const accept = async () => {
+    setIsPending(true);
+    // Notifie les scripts analytics (ex: PostHog) de l'activation.
+    window.dispatchEvent(
+      new CustomEvent('af:age-verified', { detail: { method: 'self_declared' } }),
+    );
+    try {
+      // Route Handler POST → pose le cookie via Set-Cookie HTTP standard.
+      // Ensuite reload full-page → le GET porte le cookie dans `Cookie:`.
+      const res = await fetch('/api/auth/verify-age', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      if (!res.ok) {
+        throw new Error(`verify-age failed: ${res.status}`);
+      }
+      window.location.reload();
+    } catch (err) {
+      console.error('[AgeGate] accept failed', err);
+      setIsPending(false);
+    }
   };
 
   const refuse = () => {
@@ -76,8 +79,8 @@ export function AgeGate({ exitUrl = 'https://www.google.com' }: AgeGateProps = {
     >
       <div
         className={cn(
-          'mx-4 max-w-xl w-full border border-or/30 bg-noir/80',
-          'px-8 py-12 text-center text-ivoire md:px-12 md:py-14',
+          'border-or/30 bg-noir/80 mx-4 w-full max-w-xl border',
+          'text-ivoire px-8 py-12 text-center md:px-12 md:py-14',
         )}
       >
         <div className="flex flex-col items-center gap-4">
@@ -88,14 +91,14 @@ export function AgeGate({ exitUrl = 'https://www.google.com' }: AgeGateProps = {
 
         <h2
           id="age-gate-title"
-          className="mt-10 font-display text-2xl font-medium leading-tight md:text-3xl"
+          className="font-display text-ivoire mt-10 text-2xl leading-tight font-medium md:text-3xl"
         >
           Ce site présente des objets de{' '}
           <span className="font-italic-editorial text-or">bien-être intime</span> destinés à un
           public adulte.
         </h2>
 
-        <p id="age-gate-description" className="mt-6 text-sm text-ivoire/75 md:text-base">
+        <p id="age-gate-description" className="text-ivoire/75 mt-6 text-sm md:text-base">
           Vous devez être majeur·e pour continuer. En entrant, vous confirmez avoir{' '}
           <span className="whitespace-nowrap">18 ans ou plus</span> et consulter ce site de votre
           propre initiative.
@@ -120,7 +123,7 @@ export function AgeGate({ exitUrl = 'https://www.google.com' }: AgeGateProps = {
             onClick={refuse}
             className={cn(
               'ui-caps-md inline-flex items-center justify-center px-8 py-4',
-              'border border-ivoire/30 text-ivoire/80 transition-colors duration-300',
+              'border-ivoire/30 text-ivoire/80 border transition-colors duration-300',
               'hover:border-ivoire hover:text-ivoire',
             )}
           >
@@ -128,17 +131,17 @@ export function AgeGate({ exitUrl = 'https://www.google.com' }: AgeGateProps = {
           </button>
         </div>
 
-        <p className="mt-10 text-xs text-ivoire/40">
+        <p className="text-ivoire/40 mt-10 text-xs">
           Conformité{' '}
-          <a href="https://www.arcom.fr" className="underline underline-offset-2 hover:text-or">
+          <a href="https://www.arcom.fr" className="hover:text-or underline underline-offset-2">
             Arcom
           </a>
           {' · '}
-          <a href="/confidentialite" className="underline underline-offset-2 hover:text-or">
+          <a href="/confidentialite" className="hover:text-or underline underline-offset-2">
             Politique de confidentialité
           </a>
           {' · '}
-          <a href="/mentions-legales" className="underline underline-offset-2 hover:text-or">
+          <a href="/mentions-legales" className="hover:text-or underline underline-offset-2">
             Mentions légales
           </a>
         </p>

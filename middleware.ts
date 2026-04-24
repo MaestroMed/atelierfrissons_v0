@@ -41,20 +41,20 @@ export async function middleware(request: NextRequest) {
     if (!result.success) return tooManyRequests(result);
   }
 
-  // ── 2. CSP nonce ────────────────────────────────────────────────────
+  // ── 2. CSP nonce + rafraîchit session Supabase ──────────────────────
   const nonce = generateNonce();
   const csp = buildCsp(nonce);
 
-  // ── 3. Injecter nonce dans les headers de requête (pour Next.js SSR) ─
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
-  requestHeaders.set('Content-Security-Policy', csp);
+  // ⚠️ Important : on utilise `NextResponse.next()` SANS l'option
+  // `request: { headers }` (qui était utilisée pour propager `x-nonce` en
+  // upstream). En Next 16, cette option semble interférer avec les
+  // Set-Cookie émis par les route handlers / server actions en aval
+  // (le proxy crée un nouveau response qui n'hérite pas correctement des
+  // cookies de l'inner response). On accepte de perdre l'auto-injection du
+  // nonce sur les scripts inline Next pour l'instant — sera réglé en
+  // Sprint 7 (migration `middleware.ts` → `proxy.ts` + audit nonce).
+  let response = NextResponse.next();
 
-  let response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-
-  // ── 4. Rafraîchit session Supabase ──────────────────────────────────
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (supabaseUrl && supabaseAnon) {
@@ -65,9 +65,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({
-            request: { headers: requestHeaders },
-          });
+          response = NextResponse.next();
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
@@ -75,11 +73,12 @@ export async function middleware(request: NextRequest) {
       },
     });
     // Critique : getUser() valide le JWT et déclenche le refresh token si expiré.
-    // Ne jamais remplacer par getSession() (ne valide pas la signature).
     await supabase.auth.getUser();
   }
 
-  // ── 5. Security headers sur la réponse ──────────────────────────────
+  // ── 3. Security headers sur la réponse ──────────────────────────────
+  // Important : n'utilise JAMAIS `response.cookies.set/delete` ici sans raison
+  // — cela interfère avec les Set-Cookie émis par les route handlers en aval.
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('x-nonce', nonce);
   response.headers.set('X-Content-Type-Options', 'nosniff');

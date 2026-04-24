@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 import { Bodoni_Moda, Inter } from 'next/font/google';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { AgeGate, AGE_GATE_COOKIE } from '@/components/layout/AgeGate';
+import { AgeGate } from '@/components/layout/AgeGate';
+import { AGE_GATE_COOKIE } from '@/lib/auth/age-gate';
 import { CookieBanner } from '@/components/layout/CookieBanner';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
@@ -132,10 +133,10 @@ export default async function RootLayout({
 
   return (
     <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
-      <body className="flex min-h-dvh flex-col bg-ivoire text-encre antialiased">
+      <body className="bg-ivoire text-encre flex min-h-dvh flex-col antialiased">
         <a
           href="#contenu-principal"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-sm focus:bg-noir focus:px-4 focus:py-2 focus:text-ivoire"
+          className="focus:bg-noir focus:text-ivoire sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-sm focus:px-4 focus:py-2"
         >
           Aller au contenu principal
         </a>
