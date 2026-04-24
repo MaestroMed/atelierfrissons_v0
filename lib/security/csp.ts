@@ -1,18 +1,25 @@
 /**
- * Content Security Policy (CSP) Atelier Frisson — nonce-based.
+ * Content Security Policy (CSP) Atelier Frisson.
  *
  * Voir CLAUDE.md §8 (4 couches sécurité).
  *
  * Principes :
- *   - script-src : 'self' + nonce + strict-dynamic (Next.js injecte le nonce
- *     automatiquement sur ses scripts inline, et strict-dynamic propage la
- *     confiance aux modules chargés dynamiquement)
- *   - style-src  : 'self' + 'unsafe-inline' (Tailwind v4 + shadcn utilisent
- *     des styles inline via JIT ; nonce-based ne fonctionne pas bien ici)
- *   - img-src    : sources d'images (Mux, Supabase, AF, data/blob)
- *   - connect-src: APIs autorisées (Supabase, Mux, Klaviyo, PostHog, Sentry)
- *   - frame-src  : lecteur Mux uniquement (pas d'iframe externe arbitraire)
+ *   - script-src : 'self' + nonce + 'unsafe-inline' (fallback). Pas de
+ *     `strict-dynamic` car notre middleware ne peut pas propager le nonce
+ *     à Next.js via `NextResponse.next({ request: { headers } })` sans
+ *     casser la propagation des Set-Cookie des route handlers en aval
+ *     (bug reproductible en Next 16 — cf. fix age-gate, Sprint 1).
+ *     Les navigateurs CSP3 (Chrome/Safari/Firefox récents) ignorent
+ *     `'unsafe-inline'` dès qu'un nonce est présent — donc le fallback
+ *     ne s'applique qu'aux très vieux navigateurs.
+ *   - style-src  : 'self' + 'unsafe-inline' (Tailwind v4 JIT styles inline)
+ *   - img-src    : Mux + Supabase + AF domains + data/blob
+ *   - connect-src: Supabase, Mux, Klaviyo, PostHog, Sentry, Vercel
+ *   - frame-src  : lecteur Mux uniquement
  *   - frame-ancestors 'none' + form-action 'self' : anti-clickjacking
+ *
+ * Sprint 7+ : migration `middleware.ts` → `proxy.ts` pour rétablir
+ * `strict-dynamic` proprement via request headers.
  */
 
 export function generateNonce(): string {
@@ -30,11 +37,11 @@ export function buildCsp(nonce: string): string {
     'script-src': [
       "'self'",
       `'nonce-${nonce}'`,
-      "'strict-dynamic'",
+      "'unsafe-inline'", // fallback vieux navigateurs — ignoré si nonce support
       // `'unsafe-eval'` requis en dev pour React Fast Refresh / Turbopack
       ...(isProd ? [] : ["'unsafe-eval'"]),
     ],
-    'script-src-elem': ["'self'", `'nonce-${nonce}'`],
+    'script-src-elem': ["'self'", `'nonce-${nonce}'`, "'unsafe-inline'"],
     'style-src': ["'self'", "'unsafe-inline'"],
     'style-src-elem': ["'self'", "'unsafe-inline'"],
     'img-src': [
