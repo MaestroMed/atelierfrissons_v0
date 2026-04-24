@@ -1,130 +1,373 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+/* ─────────────────────────────────────────────────────────────────
+ * Atelier Frisson — design system (globals.css)
+ * Source de vérité : CLAUDE.md §4 + moodboard brand identity.
+ *
+ * Palette signature : ivoire / rouge laqué / noir velours / or champagne.
+ * Typographies : Bodoni Moda (display, Didone) + Inter (sans-serif UI).
+ * Référence visuelle : Dior × Byredo × Smile Makers — pas de glassmorphism,
+ * pas de gradient, pas d'ombre lourde. Whitespace généreux. Radius 2-4px.
+ * ───────────────────────────────────────────────────────────────── */
 
-@custom-variant dark (&:is(.dark *));
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+/* Tokens Tailwind v4 — exposés comme utilitaires (bg-ivoire, text-or…) */
+@theme {
+  /* ── Palette signature (5 couleurs) ── */
+  --color-ivoire: #f2eadf;
+  --color-ivoire-light: #f8f2e9;
+  --color-ivoire-dark: #e5dac9;
+
+  --color-rouge: #8b1424;
+  --color-rouge-light: #a42a3a;
+  --color-rouge-dark: #6b0f1b;
+  --color-rouge-glossy: #b01828;
+
+  --color-noir: #0a0706;
+  --color-noir-velours: #1c1a17;
+  --color-noir-light: #2a2724;
+  --color-encre: #1c1a17;
+
+  --color-or: #c9a36b;
+  --color-or-light: #e0c89a;
+  --color-or-dark: #a88449;
+
+  /* ── Sémantiques (feedback) ── */
+  --color-af-success: #4a6b4e;
+  --color-af-warning: #b08d57;
+  --color-af-error: #8b2a2a;
+  --color-af-info: #5a6b7a;
+
+  /* ── Typographies (fournies par next/font via CSS variables) ── */
+  --font-display: var(--font-bodoni), 'Didot', 'Playfair Display', Georgia, serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── Échelle typo fluid (clamp) ── */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+  --text-sm: clamp(0.8125rem, 0.775rem + 0.25vw, 0.9375rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+  --text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 2rem);
+  --text-3xl: clamp(2rem, 1.75rem + 1.25vw, 3rem);
+  --text-4xl: clamp(2.5rem, 2rem + 2.5vw, 4rem);
+  --text-5xl: clamp(3rem, 2.25rem + 3.75vw, 5.5rem);
+  --text-hero: clamp(3rem, 2rem + 5vw, 7rem);
+
+  /* ── Ombres minimales ── */
+  --shadow-card: 0 2px 8px rgba(10, 7, 6, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(10, 7, 6, 0.08);
+  --shadow-elevated: 0 8px 32px rgba(10, 7, 6, 0.12);
+
+  /* ── Durées & courbes d'animation ── */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-subtle: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Animations réutilisables ── */
+  --animate-fade-up: fade-up 600ms var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 600ms var(--ease-out-expo) both;
+  --animate-reveal: reveal 1200ms var(--ease-out-expo) both;
+  --animate-fleuron: fleuron 800ms var(--ease-out-expo) both;
+  --animate-marquee: marquee 42s linear infinite;
 }
 
+/* ──────────────────────────────────────────────────────────────────
+ * Alias shadcn → palette AF
+ * shadcn référence --background, --foreground, --primary… ces aliases
+ * pointent tous vers notre palette signature. Aucun oklch/gris neutre.
+ * ────────────────────────────────────────────────────────────────── */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: var(--color-ivoire);
+  --foreground: var(--color-noir-velours);
+
+  --card: var(--color-ivoire-light);
+  --card-foreground: var(--color-noir-velours);
+
+  --popover: var(--color-ivoire-light);
+  --popover-foreground: var(--color-noir-velours);
+
+  --primary: var(--color-noir);
+  --primary-foreground: var(--color-ivoire);
+
+  --secondary: var(--color-ivoire-dark);
+  --secondary-foreground: var(--color-noir-velours);
+
+  --muted: var(--color-ivoire-dark);
+  --muted-foreground: #6b625a;
+
+  --accent: var(--color-or);
+  --accent-foreground: var(--color-noir);
+
+  --destructive: var(--color-af-error);
+
+  --border: rgba(10, 7, 6, 0.1);
+  --input: rgba(10, 7, 6, 0.14);
+  --ring: var(--color-or);
+
+  --radius: 2px;
+
+  /* Sidebars (admin — utilisés plus tard, tokens prêts) */
+  --sidebar: var(--color-noir);
+  --sidebar-foreground: var(--color-ivoire);
+  --sidebar-primary: var(--color-or);
+  --sidebar-primary-foreground: var(--color-noir);
+  --sidebar-accent: var(--color-noir-velours);
+  --sidebar-accent-foreground: var(--color-ivoire);
+  --sidebar-border: rgba(242, 234, 223, 0.1);
+  --sidebar-ring: var(--color-or);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* ──────────────────────────────────────────────────────────────────
+ * Keyframes — animations discrètes pour la révélation éditoriale.
+ * ────────────────────────────────────────────────────────────────── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    letter-spacing: 0.18em;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: var(--reveal-tracking, 0.02em);
+  }
+}
+
+@keyframes fleuron {
+  from {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Couche base — reset + conventions typographiques globales.
+ * ────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
+    box-sizing: border-box;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1,
+      'calt' 1;
+    tab-size: 4;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--color-noir);
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+
+  /* Sélection avec couleur signature */
+  ::selection {
+    background-color: var(--color-or);
+    color: var(--color-noir);
+  }
+
+  /* Focus ring premium — or champagne discret */
+  :focus-visible {
+    outline: 2px solid var(--color-or);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Cadrage image par défaut */
+  img,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Chiffres avec tabular-nums par défaut sur les prix/quantités */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Utilitaires custom Atelier Frisson
+ * ────────────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Typographies sémantiques */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-italic-editorial {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* UI caps — labels, boutons, nav : uppercase serré Inter */
+  .ui-caps {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  .ui-caps-md {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    line-height: 1;
+  }
+
+  /* Wordmark ATELIER FRISSON — tracking serré Bodoni */
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    line-height: 0.95;
+  }
+
+  .wordmark-hero {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 0.88;
+  }
+
+  /* Filet or — séparateur horizontal discret avec dégradé */
+  .filet-or {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      var(--color-or) 25%,
+      var(--color-or) 75%,
+      transparent 100%
+    );
+  }
+
+  .filet-or-solid {
+    background-color: var(--color-or);
+    opacity: 0.6;
+  }
+
+  /* Container responsive — max 1440, gouttières 24/40 */
+  .af-container {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .af-container {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  /* Révélation lettres — pour le wordmark hero */
+  .reveal-letters > span {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fade-up 700ms var(--ease-out-expo) both;
+  }
+
+  /* Shadow premium cartes produit */
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Scrollbar fine — WebKit */
+  .scrollbar-fin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-fin::-webkit-scrollbar-thumb {
+    background-color: var(--color-or-dark);
+    border-radius: 4px;
+  }
+  .scrollbar-fin::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Accessibilité : respect de prefers-reduced-motion.
+ * ────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
