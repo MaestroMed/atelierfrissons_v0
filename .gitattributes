@@ -1,0 +1,20 @@
+# Normalise les fins de ligne en LF pour tous les fichiers textuels.
+# Indispensable pour cohérence cross-platform (Windows/macOS/Linux) sur Vercel.
+* text=auto eol=lf
+
+# Binaires explicites (pas de conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.avif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mov binary
