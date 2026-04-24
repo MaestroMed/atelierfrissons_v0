@@ -8,18 +8,28 @@ import { cn } from '@/lib/utils';
 interface ArticleShareRowProps {
   title: string;
   excerpt?: string;
+  /** Label éditorial du bloc (défaut « Partager cette lecture »). */
+  label?: string;
   className?: string;
 }
 
 /**
- * Rangée de partage article — 2 actions :
+ * Rangée de partage — 2 actions :
  *   1. Partager (navigator.share si dispo — mobile surtout)
  *   2. Copier le lien (toujours disponible)
  *
  * Design très sobre : 2 boutons outline or avec micro-états. Aucun réseau
  * social explicite (on évite Twitter/Facebook tracking — compatible RGPD).
+ *
+ * Réutilisable : articles (label par défaut), fiche produit (label custom
+ * « Partager cet objet »), pages guides, etc.
  */
-export function ArticleShareRow({ title, excerpt, className }: ArticleShareRowProps) {
+export function ArticleShareRow({
+  title,
+  excerpt,
+  label = 'Partager cette lecture',
+  className,
+}: ArticleShareRowProps) {
   const [copied, setCopied] = useState(false);
 
   const getUrl = (): string => {
@@ -70,7 +80,7 @@ export function ArticleShareRow({ title, excerpt, className }: ArticleShareRowPr
         className,
       )}
     >
-      <p className="ui-caps text-or-dark">Partager cette lecture</p>
+      <p className="ui-caps text-or-dark">{label}</p>
       <div className="flex items-center gap-2">
         <button
           type="button"

@@ -3,12 +3,28 @@ import Link from 'next/link';
 import { ArrowRight, Package, ShoppingBag, Users, Sparkles } from 'lucide-react';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { StatCard } from '@/components/admin/StatCard';
+import { ActivityFeed, type ActivityItem } from '@/components/admin/ActivityFeed';
 import { getMockProducts } from '@/lib/mock/products';
 import { formatPriceCents } from '@/lib/format';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
 };
+
+/**
+ * Génère un tableau de valeurs mock pour sparkline (30j simulés).
+ * Remplacé par query réelle en Sprint 5+.
+ */
+function mockSparkline(count: number, base: number, variance: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < count; i++) {
+    // Pseudo-random déterministe (pour éviter hydration mismatch)
+    const seed = Math.sin(i * 12.9898) * 43758.5453;
+    const noise = seed - Math.floor(seed);
+    out.push(Math.max(0, base + (noise - 0.5) * variance));
+  }
+  return out;
+}
 
 export default async function AdminDashboard() {
   const products = getMockProducts();
@@ -25,6 +41,48 @@ export default async function AdminDashboard() {
     forgePagesPublished: 0,
     forgePagesPending: 0,
   };
+
+  // ── Activité récente — mock (remplacé par query orders + audit_log) ──
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const recentActivity: ActivityItem[] = [
+    {
+      id: 'a-1',
+      kind: 'alert',
+      title: 'CCBill non configuré',
+      description: 'Les commandes sont en mode dev — brancher CCBill après K-Bis.',
+      timestamp: new Date(now - 1000 * 60 * 15),
+      href: '/admin/parametres',
+    },
+    {
+      id: 'a-2',
+      kind: 'stock',
+      title: `${lowStock} produit${lowStock > 1 ? 's' : ''} en stock bas`,
+      description: 'Penser à relancer CJdropshipping pour réapprovisionnement.',
+      timestamp: new Date(now - 1000 * 60 * 60 * 2),
+      href: '/admin/stocks',
+    },
+    {
+      id: 'a-3',
+      kind: 'forge',
+      title: '0 page FORJA en attente de validation',
+      description: 'Le pipeline pSEO n’est pas encore activé — démarrage Sprint 6.',
+      timestamp: new Date(now - 1000 * 60 * 60 * 5),
+      href: '/admin/forge',
+    },
+    {
+      id: 'a-4',
+      kind: 'customer',
+      title: 'Base clients — 0 inscrit',
+      description: 'Supabase Auth non branché — dev bypass actif.',
+      timestamp: new Date(now - 1000 * 60 * 60 * 24),
+      href: '/admin/clients',
+    },
+  ];
+
+  // Sparklines — mocked, seront remplacées par vraies séries temporelles
+  const revenueSparkline = mockSparkline(14, 0, 0); // plat à 0 tant que pas de vraies commandes
+  const stockSparkline = mockSparkline(14, 50, 20);
 
   return (
     <>
@@ -44,17 +102,24 @@ export default async function AdminDashboard() {
               label="Chiffre d'affaires"
               value={formatPriceCents(stats.revenueCents)}
               hint="Les commandes paid uniquement"
+              sparkline={revenueSparkline}
             />
             <StatCard
               label="Commandes"
               value={stats.orders.toString()}
               subline="0 en attente d'expédition"
+              sparkline={revenueSparkline}
             />
-            <StatCard label="Panier moyen" value={formatPriceCents(stats.avgCart)} />
+            <StatCard
+              label="Panier moyen"
+              value={formatPriceCents(stats.avgCart)}
+              sparkline={revenueSparkline}
+            />
             <StatCard
               label="Nouveaux clients"
               value={stats.customers.toString()}
               hint="Magic-link signups"
+              sparkline={revenueSparkline}
             />
           </div>
         </section>
@@ -83,6 +148,8 @@ export default async function AdminDashboard() {
               label="Stock bas"
               value={lowStock.toString()}
               hint="< seuil de réapprovisionnement"
+              sparkline={stockSparkline}
+              sparklineColor="rouge"
             />
             <StatCard
               label="Sélection signature"
@@ -121,6 +188,26 @@ export default async function AdminDashboard() {
             <StatCard label="Indexées Google" value="—" hint="GSC non branché" />
             <StatCard label="Trafic 30j" value="—" hint="GSC non branché" />
           </div>
+        </section>
+
+        {/* Flux d'activité */}
+        <section aria-labelledby="activity-feed">
+          <div className="mb-4 flex items-end justify-between">
+            <h2 id="activity-feed" className="ui-caps text-or-dark">
+              Activité récente
+            </h2>
+            <Link
+              href="/admin/audit"
+              className="ui-caps text-or-dark hover:text-or inline-flex items-center gap-2"
+            >
+              Journal complet
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </Link>
+          </div>
+          <ActivityFeed
+            items={recentActivity}
+            emptyMessage="Pas encore d'activité — les commandes et événements apparaîtront ici."
+          />
         </section>
 
         {/* Quick actions */}

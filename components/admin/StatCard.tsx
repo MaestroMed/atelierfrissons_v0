@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { Sparkline } from './Sparkline';
 
 interface StatCardProps {
   label: string;
@@ -11,12 +12,27 @@ interface StatCardProps {
   hint?: string;
   /** Sous-titre supplémentaire (ex: "5 nouvelles aujourd'hui"). */
   subline?: string;
+  /** Données de sparkline (min 2 points) — affichée en bas à droite si fournie. */
+  sparkline?: readonly number[];
+  /** Couleur de la sparkline (défaut or, success/rouge pour tendance). */
+  sparklineColor?: 'or' | 'noir' | 'rouge' | 'success';
   className?: string;
 }
 
-export function StatCard({ label, value, delta, hint, subline, className }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  delta,
+  hint,
+  subline,
+  sparkline,
+  sparklineColor,
+  className,
+}: StatCardProps) {
   const trend = delta ? (delta.value > 0 ? 'up' : delta.value < 0 ? 'down' : 'flat') : null;
   const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
+  const autoSparklineColor: 'or' | 'noir' | 'rouge' | 'success' =
+    sparklineColor ?? (trend === 'down' ? 'rouge' : trend === 'up' ? 'success' : 'or');
 
   return (
     <div
@@ -26,7 +42,18 @@ export function StatCard({ label, value, delta, hint, subline, className }: Stat
       )}
     >
       <p className="ui-caps text-encre/55">{label}</p>
-      <p className="font-display tabular text-noir text-3xl font-medium md:text-4xl">{value}</p>
+      <div className="flex items-end justify-between gap-3">
+        <p className="font-display tabular text-noir text-3xl font-medium md:text-4xl">{value}</p>
+        {sparkline && sparkline.length >= 2 ? (
+          <Sparkline
+            data={sparkline}
+            color={autoSparklineColor}
+            ariaLabel={`Tendance ${label}`}
+            width={100}
+            height={32}
+          />
+        ) : null}
+      </div>
       {subline ? <p className="text-encre/65 text-xs">{subline}</p> : null}
       {delta ? (
         <p

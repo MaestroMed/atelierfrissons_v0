@@ -14,6 +14,7 @@ import { RecentlyViewedTracker } from '@/components/shop/RecentlyViewedTracker';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { ReviewsSection } from '@/components/shop/ReviewsSection';
 import { ReviewStars } from '@/components/shop/ReviewStars';
+import { ArticleShareRow } from '@/components/articles/ArticleShareRow';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
 import { RelatedProducts } from '@/components/shop/RelatedProducts';
@@ -218,6 +219,14 @@ export default async function ProductPage({ params }: PageProps) {
                 ))}
               </div>
             ) : null}
+
+            {/* Share row — permet au bouche-à-oreille sans passer par un réseau social */}
+            <ArticleShareRow
+              title={product.name}
+              excerpt={product.tagline ?? product.descriptionShort}
+              label="Partager cet objet"
+              className="mt-2"
+            />
           </div>
         </div>
 

@@ -5,6 +5,8 @@ import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
 import { PriceTag } from './PriceTag';
 import { StockBadge } from './StockBadge';
 import { WishlistButton } from './WishlistButton';
+import { QuickViewButton } from './QuickViewButton';
+import { getMockReviewsForProduct, summarizeReviews } from '@/lib/mock/reviews';
 
 interface ProductCardProps {
   product: Product;
@@ -33,6 +35,7 @@ export function ProductCard({
   const isJour = product.collection === 'jour' || product.collection === 'inaugurale';
   const isNuit = product.collection === 'nuit';
   const isCompact = variant === 'compact';
+  const reviewSummary = summarizeReviews(getMockReviewsForProduct(product.slug));
 
   return (
     <Link
@@ -102,6 +105,29 @@ export function ProductCard({
           variant="overlay"
           className="absolute top-3 right-3 z-10"
         />
+
+        {/* Bouton aperçu rapide — apparait au hover (bottom center) */}
+        {!isCompact ? (
+          <QuickViewButton
+            product={{
+              slug: product.slug,
+              name: product.name,
+              tagline: product.tagline,
+              descriptionShort: product.descriptionShort,
+              priceCents: product.priceCents,
+              compareAtPriceCents: product.compareAtPriceCents,
+              stockStatus: product.stockStatus,
+              stockQuantity: product.stockQuantity,
+              collection: product.collection,
+              ...(reviewSummary
+                ? {
+                    averageRating: reviewSummary.averageRating,
+                    reviewCount: reviewSummary.count,
+                  }
+                : {}),
+            }}
+          />
+        ) : null}
       </div>
 
       {/* Métadonnées textuelles */}
