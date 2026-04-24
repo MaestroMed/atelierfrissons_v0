@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
 import { Bodoni_Moda, Inter } from 'next/font/google';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { AgeGate, AGE_GATE_COOKIE } from '@/components/layout/AgeGate';
+import { CookieBanner } from '@/components/layout/CookieBanner';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
@@ -119,11 +122,14 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const ageVerified = cookieStore.get(AGE_GATE_COOKIE)?.value === '1';
+
   return (
     <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col bg-ivoire text-encre antialiased">
@@ -139,6 +145,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <Toaster position="bottom-center" />
+        {!ageVerified ? <AgeGate /> : <CookieBanner />}
       </body>
     </html>
   );
