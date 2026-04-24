@@ -10,6 +10,8 @@ import { CartDrawer } from '@/components/shop/CartDrawer';
 import { getCartSnapshot } from '@/lib/cart/store';
 import { Toaster } from '@/components/ui/sonner';
 import { JsonLd } from '@/components/shared/JsonLd';
+import { BackToTop } from '@/components/shared/BackToTop';
+import { CommandPalette } from '@/components/shared/CommandPalette';
 import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo/structured-data';
 import './globals.css';
 
@@ -155,6 +157,8 @@ export default async function RootLayout({
         </main>
         <Footer />
         <CartDrawer initialSnapshot={cartSnapshot} />
+        <BackToTop />
+        <CommandPalette />
         <Toaster position="bottom-center" />
         {!ageVerified ? <AgeGate /> : <CookieBanner />}
       </body>

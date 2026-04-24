@@ -7,6 +7,7 @@ import { Wordmark } from '@/components/layout/Wordmark';
 import { NewsletterForm } from '@/components/layout/NewsletterForm';
 import { HeroSplit } from '@/components/marketing/HeroSplit';
 import { TrustSignals } from '@/components/marketing/TrustSignals';
+import { Testimonials } from '@/components/marketing/Testimonials';
 import {
   ProductCardPreview,
   type ProductCardPreviewData,
@@ -15,6 +16,7 @@ import {
   ArticleCardPreview,
   type ArticleCardPreviewData,
 } from '@/components/marketing/ArticleCardPreview';
+import { ScrollReveal } from '@/components/shared/ScrollReveal';
 
 export const metadata: Metadata = {
   title: 'Atelier Frisson — Maison du rituel intime',
@@ -115,165 +117,179 @@ export default function HomePage() {
       <HeroSplit />
 
       {/* ═══════ 2. MANIFESTE ═══════ */}
-      <section
-        aria-labelledby="manifeste-heading"
-        className="relative bg-ivoire py-20 md:py-28"
-      >
+      <section aria-labelledby="manifeste-heading" className="bg-ivoire relative py-20 md:py-28">
         <Container className="max-w-3xl text-center">
-          <p className="ui-caps text-or-dark">Le manifeste</p>
-          <Fleuron variant="divider" size="md" color="or" className="mx-auto mt-5" />
-          <h2
-            id="manifeste-heading"
-            className="mt-6 font-display text-3xl font-medium leading-tight text-noir md:text-4xl lg:text-5xl"
-          >
-            Atelier Frisson conçoit des objets de bien-être intime{' '}
-            <span className="font-italic-editorial text-or-dark">
-              comme des rituels contemporains.
-            </span>
-          </h2>
-          <p className="mt-8 text-base leading-relaxed text-encre/75 md:text-lg">
-            La maison privilégie la précision du geste, la douceur des matières et une présence
-            éditoriale silencieuse. Chaque pièce est pensée comme un objet de soin, fabriquée en
-            silicone médical certifié, livrée dans un emballage neutre signé de la main.
-          </p>
-          <p className="mt-6 font-italic-editorial text-lg text-or-dark md:text-xl">
-            Pour les matins lents. Pour les nuits attentives. Pour le simple plaisir d’être à soi.
-          </p>
+          <ScrollReveal>
+            <p className="ui-caps text-or-dark">Le manifeste</p>
+            <Fleuron variant="divider" size="md" color="or" className="mx-auto mt-5" />
+            <h2
+              id="manifeste-heading"
+              className="font-display text-noir mt-6 text-3xl leading-tight font-medium md:text-4xl lg:text-5xl"
+            >
+              Atelier Frisson conçoit des objets de bien-être intime{' '}
+              <span className="font-italic-editorial text-or-dark">
+                comme des rituels contemporains.
+              </span>
+            </h2>
+          </ScrollReveal>
+          <ScrollReveal delay={120}>
+            <p className="text-encre/75 mt-8 text-base leading-relaxed md:text-lg">
+              La maison privilégie la précision du geste, la douceur des matières et une présence
+              éditoriale silencieuse. Chaque pièce est pensée comme un objet de soin, fabriquée en
+              silicone médical certifié, livrée dans un emballage neutre signé de la main.
+            </p>
+            <p className="font-italic-editorial text-or-dark mt-6 text-lg md:text-xl">
+              Pour les matins lents. Pour les nuits attentives. Pour le simple plaisir d’être à soi.
+            </p>
+          </ScrollReveal>
         </Container>
       </section>
 
       {/* ═══════ 3. LA COLLECTION ═══════ */}
-      <section
-        aria-labelledby="collection-heading"
-        className="bg-ivoire-light py-20 md:py-28"
-      >
+      <section aria-labelledby="collection-heading" className="bg-ivoire-light py-20 md:py-28">
         <Container>
-          <header className="mb-12 flex flex-col items-center gap-4 text-center md:mb-16">
-            <p className="ui-caps text-or-dark">Sélection signature</p>
-            <h2
-              id="collection-heading"
-              className="font-display text-4xl font-medium md:text-5xl lg:text-6xl"
-            >
-              La Collection
-            </h2>
-            <Fleuron variant="divider" size="md" color="or" className="mt-1 opacity-80" />
-            <p className="max-w-xl text-base text-encre/70 md:text-lg">
-              Six objets, deux collections — JOUR et NUIT. Chaque pièce est une invitation à un
-              rituel différent.
-            </p>
-          </header>
+          <ScrollReveal>
+            <header className="mb-12 flex flex-col items-center gap-4 text-center md:mb-16">
+              <p className="ui-caps text-or-dark">Sélection signature</p>
+              <h2
+                id="collection-heading"
+                className="font-display text-4xl font-medium md:text-5xl lg:text-6xl"
+              >
+                La Collection
+              </h2>
+              <Fleuron variant="divider" size="md" color="or" className="mt-1 opacity-80" />
+              <p className="text-encre/70 max-w-xl text-base md:text-lg">
+                Six objets, deux collections — JOUR et NUIT. Chaque pièce est une invitation à un
+                rituel différent.
+              </p>
+            </header>
+          </ScrollReveal>
 
           <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-            {PREVIEW_PRODUCTS.map((product) => (
-              <li key={product.slug}>
-                <ProductCardPreview product={product} />
-              </li>
+            {PREVIEW_PRODUCTS.map((product, i) => (
+              <ScrollReveal key={product.slug} delay={i * 90} as="div">
+                <li>
+                  <ProductCardPreview product={product} />
+                </li>
+              </ScrollReveal>
             ))}
           </ul>
 
-          <div className="mt-14 flex justify-center">
-            <Link
-              href="/boutique"
-              className="ui-caps-md inline-flex items-center gap-3 border border-noir px-8 py-4 text-noir transition-all duration-300 hover:bg-noir hover:text-ivoire"
-            >
-              Voir toute la boutique
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
+          <ScrollReveal delay={180}>
+            <div className="mt-14 flex justify-center">
+              <Link
+                href="/boutique"
+                className="ui-caps-md border-noir text-noir hover:bg-noir hover:text-ivoire inline-flex items-center gap-3 border px-8 py-4 transition-all duration-300"
+              >
+                Voir toute la boutique
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </ScrollReveal>
         </Container>
       </section>
 
       {/* ═══════ 4. BANNIÈRE ÉDITORIALE ═══════ */}
       <section
         aria-label="Citation éditoriale"
-        className="relative isolate overflow-hidden bg-noir py-24 text-ivoire md:py-36"
+        className="bg-noir text-ivoire relative isolate overflow-hidden py-24 md:py-36"
       >
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(ellipse_at_30%_40%,rgba(201,163,107,0.15)_0%,transparent_60%),radial-gradient(ellipse_at_80%_60%,rgba(139,20,36,0.2)_0%,transparent_55%)]"
         />
         <Container className="relative max-w-4xl text-center">
-          <Fleuron variant="divider" size="lg" color="or" className="mx-auto mb-8 opacity-80" />
-          <blockquote className="font-display text-3xl font-medium leading-tight md:text-5xl lg:text-6xl">
-            <span aria-hidden="true" className="font-italic-editorial text-or">
-              «&nbsp;
-            </span>
-            Ralentir n’est pas perdre du temps.{' '}
-            <span className="font-italic-editorial text-or">C’est un acte de soin profond.</span>
-            <span aria-hidden="true" className="font-italic-editorial text-or">
-              &nbsp;»
-            </span>
-          </blockquote>
-          <footer className="mt-10">
-            <p className="ui-caps text-or/80">Atelier Frisson — Paris</p>
-          </footer>
-          <Fleuron variant="divider" size="lg" color="or" className="mx-auto mt-8 opacity-60" />
+          <ScrollReveal>
+            <Fleuron variant="divider" size="lg" color="or" className="mx-auto mb-8 opacity-80" />
+            <blockquote className="font-display text-3xl leading-tight font-medium md:text-5xl lg:text-6xl">
+              <span aria-hidden="true" className="font-italic-editorial text-or">
+                «&nbsp;
+              </span>
+              Ralentir n’est pas perdre du temps.{' '}
+              <span className="font-italic-editorial text-or">C’est un acte de soin profond.</span>
+              <span aria-hidden="true" className="font-italic-editorial text-or">
+                &nbsp;»
+              </span>
+            </blockquote>
+            <footer className="mt-10">
+              <p className="ui-caps text-or/80">Atelier Frisson — Paris</p>
+            </footer>
+            <Fleuron variant="divider" size="lg" color="or" className="mx-auto mt-8 opacity-60" />
+          </ScrollReveal>
         </Container>
       </section>
 
       {/* ═══════ 5. LE JOURNAL ═══════ */}
-      <section
-        aria-labelledby="journal-heading"
-        className="bg-ivoire py-20 md:py-28"
-      >
+      <section aria-labelledby="journal-heading" className="bg-ivoire py-20 md:py-28">
         <Container>
-          <header className="mb-12 flex flex-col gap-5 md:mb-16 md:flex-row md:items-end md:justify-between">
-            <div className="flex flex-col gap-3">
-              <p className="ui-caps text-or-dark">Le Journal</p>
-              <h2
-                id="journal-heading"
-                className="font-display text-4xl font-medium md:text-5xl lg:text-6xl"
+          <ScrollReveal>
+            <header className="mb-12 flex flex-col gap-5 md:mb-16 md:flex-row md:items-end md:justify-between">
+              <div className="flex flex-col gap-3">
+                <p className="ui-caps text-or-dark">Le Journal</p>
+                <h2
+                  id="journal-heading"
+                  className="font-display text-4xl font-medium md:text-5xl lg:text-6xl"
+                >
+                  Les Rituels{' '}
+                  <span className="font-italic-editorial text-or-dark">en éditorial</span>
+                </h2>
+              </div>
+              <Link
+                href="/rituels"
+                className="ui-caps text-or-dark hover:text-or inline-flex items-center gap-2 transition-all hover:gap-3"
               >
-                Les Rituels{' '}
-                <span className="font-italic-editorial text-or-dark">en éditorial</span>
-              </h2>
-            </div>
-            <Link
-              href="/rituels"
-              className="ui-caps inline-flex items-center gap-2 text-or-dark transition-all hover:gap-3 hover:text-or"
-            >
-              Tous les articles
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </header>
+                Tous les articles
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </header>
+          </ScrollReveal>
 
           <ul className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-8 lg:grid-cols-3 lg:gap-10">
-            {PREVIEW_ARTICLES.map((article) => (
-              <li key={article.slug}>
-                <ArticleCardPreview article={article} />
-              </li>
+            {PREVIEW_ARTICLES.map((article, i) => (
+              <ScrollReveal key={article.slug} delay={i * 120} as="div">
+                <li>
+                  <ArticleCardPreview article={article} />
+                </li>
+              </ScrollReveal>
             ))}
           </ul>
         </Container>
       </section>
 
-      {/* ═══════ 6. NEWSLETTER ÉDITORIALE ═══════ */}
+      {/* ═══════ 6. TÉMOIGNAGES ═══════ */}
+      <Testimonials />
+
+      {/* ═══════ 7. NEWSLETTER ÉDITORIALE ═══════ */}
       <section
         aria-label="Newsletter éditoriale"
-        className="relative bg-ivoire-dark py-24 md:py-28"
+        className="bg-ivoire-dark relative py-24 md:py-28"
       >
         <Container className="max-w-3xl text-center">
-          <p className="ui-caps text-or-dark">La correspondance</p>
-          <Fleuron variant="divider" size="md" color="or" className="mx-auto mt-5 opacity-80" />
-          <h2 className="mt-6 font-display text-3xl font-medium md:text-4xl lg:text-5xl">
-            Recevez nos rituels en avant-première
-          </h2>
-          <p className="mt-6 text-base text-encre/75 md:text-lg">
-            Une lettre éditoriale, jamais plus de deux fois par mois. Des rituels, des portraits,
-            des guides — et de temps en temps, une découverte produit en avant-première.
-          </p>
-          <NewsletterForm source="homepage" className="mx-auto mt-10 max-w-xl text-left" />
+          <ScrollReveal>
+            <p className="ui-caps text-or-dark">La correspondance</p>
+            <Fleuron variant="divider" size="md" color="or" className="mx-auto mt-5 opacity-80" />
+            <h2 className="font-display mt-6 text-3xl font-medium md:text-4xl lg:text-5xl">
+              Recevez nos rituels en avant-première
+            </h2>
+            <p className="text-encre/75 mt-6 text-base md:text-lg">
+              Une lettre éditoriale, jamais plus de deux fois par mois. Des rituels, des portraits,
+              des guides — et de temps en temps, une découverte produit en avant-première.
+            </p>
+          </ScrollReveal>
+          <ScrollReveal delay={120}>
+            <NewsletterForm source="homepage" className="mx-auto mt-10 max-w-xl text-left" />
+          </ScrollReveal>
         </Container>
       </section>
 
-      {/* ═══════ 7. TRUST SIGNALS ═══════ */}
+      {/* ═══════ 8. TRUST SIGNALS ═══════ */}
       <TrustSignals />
 
-      {/* ═══════ 8. Wordmark signature (transition vers footer) ═══════ */}
+      {/* ═══════ 9. Wordmark signature (transition vers footer) ═══════ */}
       <section aria-hidden="true" className="bg-ivoire-light py-12 text-center">
         <Fleuron variant="crown" size="md" color="or" className="mx-auto opacity-80" />
         <Wordmark as="p" size="sm" color="noir" className="mt-3 opacity-70" />
-        <p className="mt-2 font-italic-editorial text-xs text-encre/50">
+        <p className="font-italic-editorial text-encre/50 mt-2 text-xs">
           Paris — Maison du rituel intime
         </p>
       </section>

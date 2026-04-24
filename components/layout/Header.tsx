@@ -108,14 +108,26 @@ export function Header({ cartCount = 0 }: HeaderProps) {
 
         {/* ──────── Colonne droite : actions ──────── */}
         <div className="flex items-center justify-end gap-3 sm:gap-5">
-          <Link
-            href="/recherche"
-            aria-label="Rechercher"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('af:palette-open'));
+              }
+            }}
+            aria-label="Ouvrir la recherche rapide (⌘K)"
+            aria-keyshortcuts="Meta+K Control+K"
             className="text-ivoire/85 hover:text-or hidden items-center gap-2 transition-colors sm:inline-flex"
           >
             <Search className="size-4" aria-hidden="true" />
             <span className="ui-caps hidden xl:inline">Recherche</span>
-          </Link>
+            <kbd
+              aria-hidden="true"
+              className="ui-caps border-or/40 text-ivoire/60 hidden rounded-sm border px-1.5 py-0.5 text-[10px] xl:inline"
+            >
+              ⌘K
+            </kbd>
+          </button>
           <Link
             href="/compte"
             aria-label="Mon compte"

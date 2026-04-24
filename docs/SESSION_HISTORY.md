@@ -232,3 +232,52 @@ f4fa8a8 feat(admin): Sprint 4 back-office P1 (layout + dashboard + 6 modules)
 ---
 
 _Sprint 1-7 livrés. Sprint 8 : seed Supabase + connexions services réelles, raffinements polish._
+
+---
+
+## Session 2 — 2026-04-24 — Polish post-MVP (P4 → P6)
+
+**Mode** : carte blanche continue « state-of-the-art / award-winning grade UX/UI ».
+**Durée** : quatre lots incrémentaux (P4 polish pages, P5 infra réelle, P6 UX kinétique).
+
+### P4 — Polish pages & UX (commit `5cd8c16`)
+
+- **/compte** : greeting personnalisé via Supabase session + user mock dev bypass
+- **OG images dynamiques** via `app/opengraph-image.tsx` + fonts runtime
+- **PWA manifest** (`app/manifest.ts`) + icons `/icon` + `/apple-icon` (Next 16 convention sans extension)
+- **/recherche** : page de recherche basique (liste produits/articles, filtrage client)
+- **Détails admin** : `/admin/produits/[slug]` + `/admin/commandes/[id]` avec tabs & actions
+- **ScrollProgress** : barre fine or en haut, progression linéaire au scroll
+- **StickyProductBar** mobile sur fiches produit (add-to-cart persistant en bas)
+- **Dev auth bypass** : `lib/auth/session.ts` renvoie un mock user si Supabase non configuré
+- **CSP drop strict-dynamic** (commit fix `0b650c6`) pour débloquer inline scripts Next.js
+
+### P5 — Infra production-ready (commit `93e259d`)
+
+- **`middleware.ts` → `proxy.ts`** : migration Next 16, export `proxy` function (au lieu de `middleware`)
+- **CSP `strict-dynamic` restauré** : propagation nonce via `NextResponse.next({ request: { headers: requestHeaders } })` (vraie source du bug initial)
+- **`/api/newsletter/subscribe`** : endpoint réel — UPSERT `newsletter_subscribers` via service role (idempotent) + Klaviyo track + Resend welcome email. Graceful fallback si Supabase/Klaviyo/Resend non configurés.
+- **`/api/forge/ingest`** : webhook FORJA avec **HMAC SHA-256** (`node:crypto` `timingSafeEqual`) + zod schema pour payload pages programmatiques
+- **`/api/cron/sync-products`** : stub cron CJ avec Bearer auth (`CRON_SECRET` env)
+- **`scripts/seed.ts`** : dotenv + upsert catégories/produits/articles/admin_user
+- **NewsletterForm** : `fetch('/api/newsletter/subscribe')` réel (au lieu de l'appel direct Klaviyo côté client)
+
+### P6 — UX kinétique award-winning (ce commit)
+
+- **`ScrollReveal`** : wrapper IntersectionObserver avec fade-up + delay stagger, respecte `prefers-reduced-motion` (révèle instantanément)
+- **Homepage** : 6 sections wrappées (manifeste, collection header + 6 cards staggered, bannière éditoriale, journal header + 3 cards staggered, newsletter) — chaque élément apparaît avec élégance au scroll
+- **`Testimonials`** : nouvelle section entre Journal et Newsletter, 3 témoignages CSP+ (Camille/Sophie/Léa) en blockquote Bodoni italique + séparateurs fleuron
+- **`BackToTop`** : bouton flottant bas-droite, apparaît après 800px de scroll, smooth scroll + respect reduced-motion
+- **`CommandPalette`** ⌘K : overlay de recherche rapide — 24 items indexés (nav + collections + 6 produits + compte + aide + actions), raccourci global ⌘K/Ctrl+K + touche `/`, navigation clavier ↑↓/Enter/Esc, substring match avec normalisation accents, reset activeIndex on query change, focus trap + body scroll lock, listbox ARIA + aria-activedescendant
+- **Header.Search** : remplacé le `<Link href="/recherche">` par un bouton qui dispatch `af:palette-open`, kbd hint `⌘K` affiché en xl+
+
+**Verifications** : `pnpm typecheck` ✓ `pnpm lint` ✓ `pnpm build` ✓ (66 routes, 0 error).
+
+### Handover Session 2
+
+- Site bootable en local sans env var : dev bypass actif (mock user, Stripe/CCBill/Supabase/Klaviyo/Resend graceful stubs)
+- Prêt pour connexions réelles : il suffit de remplir `.env.local` (voir `docs/SUPABASE_SETUP.md`)
+- Command palette ⌘K fonctionnel pour démo client
+- Animations subtiles, non intrusives, respect a11y motion
+
+_Prochaine cadence possible_ : E2E Playwright (checkout, age gate, palette), axe-core audit, Lighthouse CI, stripe session creation effective, CCBill FlexForms.
