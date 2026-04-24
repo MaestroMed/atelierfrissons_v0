@@ -40,7 +40,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
     <header
       data-scrolled={scrolled}
       className={cn(
-        'sticky top-0 z-40 bg-noir text-ivoire',
+        'bg-noir text-ivoire sticky top-0 z-40',
         'transition-[box-shadow,backdrop-filter] duration-300',
         'data-[scrolled=true]:shadow-[0_1px_0_rgba(201,163,107,0.2)]',
         'supports-backdrop-filter:data-[scrolled=true]:bg-noir/92',
@@ -59,8 +59,8 @@ export function Header({ cartCount = 0 }: HeaderProps) {
             onClick={() => setMobileOpen(true)}
             className={cn(
               'inline-flex items-center justify-center',
-              'size-10 -ml-2 rounded-sm',
-              'text-ivoire/90 transition-colors hover:text-or',
+              '-ml-2 size-10 rounded-sm',
+              'text-ivoire/90 hover:text-or transition-colors',
               'focus-visible:outline-offset-2',
               'lg:hidden',
             )}
@@ -79,8 +79,8 @@ export function Header({ cartCount = 0 }: HeaderProps) {
                 className={cn(
                   'ui-caps text-ivoire/85 transition-colors',
                   'hover:text-or focus-visible:text-or',
-                  'relative after:absolute after:-bottom-1.5 after:left-0 after:right-0',
-                  'after:h-px after:origin-center after:scale-x-0 after:bg-or',
+                  'relative after:absolute after:right-0 after:-bottom-1.5 after:left-0',
+                  'after:bg-or after:h-px after:origin-center after:scale-x-0',
                   'after:transition-transform after:duration-300',
                   'hover:after:scale-x-100 focus-visible:after:scale-x-100',
                 )}
@@ -101,7 +101,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
             as="p"
             size="md"
             color="or"
-            className="transition-colors group-hover:text-or-light"
+            className="group-hover:text-or-light transition-colors"
           />
           <Fleuron variant="divider" size="sm" color="or" className="opacity-70" />
         </Link>
@@ -111,7 +111,7 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           <Link
             href="/recherche"
             aria-label="Rechercher"
-            className="hidden items-center gap-2 text-ivoire/85 transition-colors hover:text-or sm:inline-flex"
+            className="text-ivoire/85 hover:text-or hidden items-center gap-2 transition-colors sm:inline-flex"
           >
             <Search className="size-4" aria-hidden="true" />
             <span className="ui-caps hidden xl:inline">Recherche</span>
@@ -119,16 +119,21 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           <Link
             href="/compte"
             aria-label="Mon compte"
-            className="hidden items-center gap-2 text-ivoire/85 transition-colors hover:text-or sm:inline-flex"
+            className="text-ivoire/85 hover:text-or hidden items-center gap-2 transition-colors sm:inline-flex"
           >
             <UserRound className="size-4" aria-hidden="true" />
             <span className="ui-caps hidden xl:inline">Compte</span>
           </Link>
-          <Link
-            href="/panier"
-            aria-label={`Panier (${cartCount} article${cartCount > 1 ? 's' : ''})`}
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('af:cart-open'));
+              }
+            }}
+            aria-label={`Ouvrir le panier (${cartCount} article${cartCount > 1 ? 's' : ''})`}
             className={cn(
-              'flex items-center gap-2 text-ivoire/90 transition-colors hover:text-or',
+              'text-ivoire/90 hover:text-or flex items-center gap-2 transition-colors',
               'relative',
             )}
           >
@@ -136,11 +141,12 @@ export function Header({ cartCount = 0 }: HeaderProps) {
             <span className="ui-caps hidden md:inline">Panier</span>
             <span
               aria-hidden="true"
-              className="tabular text-[11px] leading-none text-or"
+              className="tabular text-or text-[11px] leading-none transition-transform"
+              data-cart-count
             >
               ({cartCount.toString().padStart(2, '0')})
             </span>
-          </Link>
+          </button>
         </div>
       </Container>
 

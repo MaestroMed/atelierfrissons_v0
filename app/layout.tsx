@@ -6,6 +6,8 @@ import { Footer } from '@/components/layout/Footer';
 import { AgeGate } from '@/components/layout/AgeGate';
 import { AGE_GATE_COOKIE } from '@/lib/auth/age-gate';
 import { CookieBanner } from '@/components/layout/CookieBanner';
+import { CartDrawer } from '@/components/shop/CartDrawer';
+import { getCartSnapshot } from '@/lib/cart/store';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
@@ -130,6 +132,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const ageVerified = cookieStore.get(AGE_GATE_COOKIE)?.value === '1';
+  const cartSnapshot = await getCartSnapshot();
 
   return (
     <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
@@ -140,11 +143,12 @@ export default async function RootLayout({
         >
           Aller au contenu principal
         </a>
-        <Header />
+        <Header cartCount={cartSnapshot.itemCount} />
         <main id="contenu-principal" className="flex-1">
           {children}
         </main>
         <Footer />
+        <CartDrawer initialSnapshot={cartSnapshot} />
         <Toaster position="bottom-center" />
         {!ageVerified ? <AgeGate /> : <CookieBanner />}
       </body>
