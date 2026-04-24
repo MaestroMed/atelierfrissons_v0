@@ -7,6 +7,8 @@ import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
 import { JsonLd } from '@/components/shared/JsonLd';
 import { ScrollProgress } from '@/components/shared/ScrollProgress';
+import { ArticleToc } from '@/components/articles/ArticleToc';
+import { ArticleShareRow } from '@/components/articles/ArticleShareRow';
 import { buildArticleSchema } from '@/lib/seo/structured-data';
 import { ProductCard } from '@/components/shop/ProductCard';
 import {
@@ -70,7 +72,7 @@ export default async function RituelArticlePage({ params }: PageProps) {
         })}
       />
 
-      <Container className="py-10 md:py-14" width="narrow">
+      <Container className="py-10 md:py-14">
         <BreadcrumbNav
           items={[
             { label: 'Accueil', href: '/' },
@@ -80,7 +82,7 @@ export default async function RituelArticlePage({ params }: PageProps) {
           className="mb-10"
         />
 
-        <header className="flex flex-col items-center gap-5 text-center">
+        <header className="mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
           <p className="ui-caps text-or-dark">{article.category}</p>
           <h1 className="font-display text-noir text-4xl leading-tight font-medium md:text-5xl lg:text-6xl">
             {article.title}
@@ -100,7 +102,7 @@ export default async function RituelArticlePage({ params }: PageProps) {
         </header>
 
         <div
-          className={`mt-10 aspect-[16/10] overflow-hidden bg-gradient-to-br ${
+          className={`mx-auto mt-10 aspect-[16/10] max-w-3xl overflow-hidden bg-gradient-to-br ${
             article.heroGradient === 'rouge'
               ? 'from-rouge-dark via-rouge to-rouge-light'
               : article.heroGradient === 'noir'
@@ -110,18 +112,32 @@ export default async function RituelArticlePage({ params }: PageProps) {
           aria-hidden="true"
         />
 
-        <article
-          className="prose-article text-encre/85 mt-16 text-base leading-relaxed md:text-lg"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
+        {/* Layout 2 colonnes : contenu + TOC sticky desktop */}
+        <div className="mt-16 grid gap-12 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-16">
+          <div className="min-w-0 lg:max-w-3xl">
+            <article
+              className="prose-article text-encre/85 text-base leading-relaxed md:text-lg"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
 
-        {article.authorBio ? (
-          <aside className="border-encre/10 mt-16 flex flex-col gap-3 border-t pt-10">
-            <p className="ui-caps text-or-dark">À propos de l’auteur</p>
-            <h3 className="font-display text-noir text-xl font-medium">{article.author}</h3>
-            <p className="text-encre/75 text-sm">{article.authorBio}</p>
+            <ArticleShareRow title={article.title} excerpt={article.excerpt} className="mt-12" />
+
+            {article.authorBio ? (
+              <aside className="border-encre/10 mt-10 flex flex-col gap-3 border-t pt-10">
+                <p className="ui-caps text-or-dark">À propos de l’auteur</p>
+                <h3 className="font-display text-noir text-xl font-medium">{article.author}</h3>
+                <p className="text-encre/65 text-xs">{article.authorRole}</p>
+                <p className="text-encre/75 mt-2 text-sm">{article.authorBio}</p>
+              </aside>
+            ) : null}
+          </div>
+
+          <aside className="hidden lg:block">
+            <div className="sticky top-32">
+              <ArticleToc targetSelector="article.prose-article" />
+            </div>
           </aside>
-        ) : null}
+        </div>
       </Container>
 
       {relatedProducts.length > 0 ? (

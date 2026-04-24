@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { WishlistButton } from '@/components/shop/WishlistButton';
 
 export interface ProductCardPreviewData {
   slug: string;
@@ -32,9 +33,7 @@ export function ProductCardPreview({ product, className }: ProductCardPreviewPro
       className={cn(
         'group relative flex flex-col overflow-hidden border border-transparent',
         'transition-[border-color,transform,box-shadow] duration-500',
-        isJour
-          ? 'bg-ivoire text-encre hover:border-or'
-          : 'bg-rouge text-ivoire hover:border-or',
+        isJour ? 'bg-ivoire text-encre hover:border-or' : 'bg-rouge text-ivoire hover:border-or',
         'hover:shadow-card-hover',
         className,
       )}
@@ -50,25 +49,28 @@ export function ProductCardPreview({ product, className }: ProductCardPreviewPro
         {product.badge ? (
           <span
             className={cn(
-              'ui-caps absolute left-5 top-5 border px-3 py-1.5',
+              'ui-caps absolute top-5 left-5 border px-3 py-1.5',
               isJour ? 'border-noir/20 text-noir/80' : 'border-ivoire/40 text-ivoire/90',
             )}
           >
             {product.badge}
           </span>
         ) : null}
+
+        {/* Bouton favoris — overlay top-right */}
+        <WishlistButton
+          slug={product.slug}
+          productName={product.name}
+          variant="overlay"
+          className="absolute top-4 right-4 z-10"
+        />
       </div>
 
       <div className="flex flex-1 flex-col gap-2 px-6 py-6">
-        <p
-          className={cn(
-            'ui-caps',
-            isJour ? 'text-or-dark' : 'text-or',
-          )}
-        >
+        <p className={cn('ui-caps', isJour ? 'text-or-dark' : 'text-or')}>
           {product.collection === 'jour' ? 'Collection JOUR' : 'Collection NUIT'}
         </p>
-        <h3 className="font-display text-2xl font-medium leading-tight md:text-[26px]">
+        <h3 className="font-display text-2xl leading-tight font-medium md:text-[26px]">
           {product.name}
         </h3>
         <p

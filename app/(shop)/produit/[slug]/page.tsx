@@ -8,6 +8,7 @@ import { ProductGallery } from '@/components/shop/ProductGallery';
 import { PriceTag } from '@/components/shop/PriceTag';
 import { StockBadge } from '@/components/shop/StockBadge';
 import { AddToCartButton } from '@/components/shop/AddToCartButton';
+import { WishlistButton } from '@/components/shop/WishlistButton';
 import { StickyProductBar } from '@/components/shop/StickyProductBar';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
@@ -138,13 +139,22 @@ export default async function ProductPage({ params }: PageProps) {
 
             <p className="text-encre/85 text-base leading-relaxed">{product.descriptionShort}</p>
 
-            <AddToCartButton
-              slug={product.slug}
-              productName={product.name}
-              collection={product.collection}
-              showQuantity
-              size="lg"
-            />
+            <div className="flex items-stretch gap-3">
+              <AddToCartButton
+                slug={product.slug}
+                productName={product.name}
+                collection={product.collection}
+                showQuantity
+                size="lg"
+                className="flex-1"
+              />
+              <WishlistButton
+                slug={product.slug}
+                productName={product.name}
+                variant="inline"
+                className="shrink-0 self-end"
+              />
+            </div>
 
             {/* Engagements en colonne à côté du panier */}
             <ul className="border-encre/10 mt-2 space-y-3 border-y py-5 text-sm">

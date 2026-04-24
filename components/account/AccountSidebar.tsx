@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, Package, MapPin, Bell, ShieldCheck, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Heart, MapPin, Bell, ShieldCheck, LogOut } from 'lucide-react';
 
 interface AccountSidebarProps {
   email: string;
@@ -12,6 +12,7 @@ interface AccountSidebarProps {
 const NAV = [
   { label: 'Tableau de bord', href: '/compte', icon: LayoutDashboard, exact: true },
   { label: 'Mes commandes', href: '/compte/commandes', icon: Package, exact: false },
+  { label: 'Mes favoris', href: '/compte/favoris', icon: Heart, exact: false },
   { label: 'Adresses', href: '/compte/adresses', icon: MapPin, exact: false },
   { label: 'Préférences', href: '/compte/preferences', icon: Bell, exact: false },
   { label: 'Sécurité', href: '/compte/securite', icon: ShieldCheck, exact: false },

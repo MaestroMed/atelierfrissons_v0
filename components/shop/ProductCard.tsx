@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
 import { PriceTag } from './PriceTag';
 import { StockBadge } from './StockBadge';
+import { WishlistButton } from './WishlistButton';
 
 interface ProductCardProps {
   product: Product;
@@ -93,6 +94,14 @@ export function ProductCard({
         >
           AF
         </span>
+
+        {/* Bouton favoris — overlay top-right */}
+        <WishlistButton
+          slug={product.slug}
+          productName={product.name}
+          variant="overlay"
+          className="absolute top-3 right-3 z-10"
+        />
       </div>
 
       {/* Métadonnées textuelles */}

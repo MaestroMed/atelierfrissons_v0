@@ -45,7 +45,27 @@ export default function NotFound() {
 
         <Fleuron variant="divider" size="md" color="or" className="mt-8 opacity-50" />
 
-        <p className="text-encre/55 text-xs">
+        {/* Destinations suggérées — redonne un cap éditorial */}
+        <section aria-label="Destinations suggérées" className="mt-4 w-full">
+          <p className="ui-caps text-or-dark/80 mb-5">Quelques destinations</p>
+          <ul className="bg-or/15 grid grid-cols-2 gap-px md:grid-cols-4">
+            {SUGGESTED.map((dest) => (
+              <li key={dest.href} className="bg-ivoire">
+                <Link
+                  href={dest.href}
+                  className="group hover:bg-ivoire-light flex h-full flex-col items-center justify-center gap-1 px-4 py-5 transition-colors"
+                >
+                  <span className="ui-caps text-or-dark text-[10px]">{dest.label}</span>
+                  <span className="font-display text-noir group-hover:text-or-dark text-sm transition-colors">
+                    {dest.name}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <p className="text-encre/55 mt-4 text-xs">
           Si vous pensez qu’il s’agit d’une erreur, écrivez-nous à{' '}
           <a
             href="mailto:contact@atelierfrisson.fr"
@@ -59,3 +79,10 @@ export default function NotFound() {
     </Container>
   );
 }
+
+const SUGGESTED: readonly { href: string; label: string; name: string }[] = [
+  { href: '/boutique', label: 'Tous les objets', name: 'Boutique' },
+  { href: '/collections/jour', label: 'Collection', name: 'JOUR' },
+  { href: '/collections/nuit', label: 'Collection', name: 'NUIT' },
+  { href: '/rituels', label: 'Éditorial', name: 'Le Journal' },
+] as const;
