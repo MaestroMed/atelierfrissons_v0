@@ -4,9 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import {
   addToCart as addToCartStore,
+  applyPromoCode as applyPromoCodeStore,
   clearCart as clearCartStore,
   getCartSnapshot,
   removeFromCart as removeFromCartStore,
+  removePromoCode as removePromoCodeStore,
   setCartQuantity as setCartQuantityStore,
 } from './store';
 import type { CartSnapshot } from './types';
@@ -63,4 +65,31 @@ export async function clearCartAction(): Promise<CartSnapshot> {
 
 export async function getCartSnapshotAction(): Promise<CartSnapshot> {
   return getCartSnapshot();
+}
+
+const promoCodeSchema = z
+  .string()
+  .min(1, 'Code manquant')
+  .max(50, 'Code trop long')
+  .regex(/^[A-Za-z0-9 _-]+$/, 'Caractères invalides');
+
+export async function applyPromoCodeAction(
+  code: string,
+): Promise<{ snapshot: CartSnapshot; error: string | null }> {
+  const parsed = promoCodeSchema.safeParse(code);
+  if (!parsed.success) {
+    const snapshot = await getCartSnapshot();
+    return { snapshot, error: parsed.error.issues[0]?.message ?? 'Code invalide' };
+  }
+  const result = await applyPromoCodeStore(parsed.data);
+  revalidatePath('/panier');
+  revalidatePath('/(shop)', 'layout');
+  return result;
+}
+
+export async function removePromoCodeAction(): Promise<CartSnapshot> {
+  const result = await removePromoCodeStore();
+  revalidatePath('/panier');
+  revalidatePath('/(shop)', 'layout');
+  return result;
 }

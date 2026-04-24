@@ -41,6 +41,9 @@ export const EMPTY_CART: CartSnapshot = {
 export const CART_COOKIE = 'af_cart';
 export const CART_COOKIE_MAX_AGE_SECONDS = 14 * 24 * 60 * 60; // 14 jours
 
+/** Cookie name pour le code promo appliqué (expire avec le panier). */
+export const PROMO_COOKIE = 'af_promo';
+
 /** TVA française par défaut (Sprint 5 : configurable par produit/pays). */
 export const DEFAULT_TAX_RATE = 0.2;
 

@@ -8,10 +8,12 @@ import {
   DEFAULT_TAX_RATE,
   EMPTY_CART,
   FREE_SHIPPING_THRESHOLD_CENTS,
+  PROMO_COOKIE,
   STANDARD_SHIPPING_CENTS,
   type CartLineItem,
   type CartSnapshot,
 } from './types';
+import { normalizePromoCode, validatePromo } from './promo';
 
 /**
  * Source de vérité du panier — version Sprint 2.
@@ -66,17 +68,30 @@ function lineItemFromProduct(product: Product, quantity: number): CartLineItem {
   };
 }
 
-function computeTotals(items: readonly CartLineItem[]): CartSnapshot {
+function computeTotals(items: readonly CartLineItem[], promoCode: string | null): CartSnapshot {
   const subtotalCents = items.reduce((acc, item) => acc + item.unitPriceCents * item.quantity, 0);
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const taxCents = Math.round(subtotalCents * (DEFAULT_TAX_RATE / (1 + DEFAULT_TAX_RATE)));
+
+  // Code promo — re-validé à chaque calcul (si le panier change, le code peut devenir invalide)
+  let discountCents = 0;
+  let appliedCode: string | null = null;
+  if (promoCode && subtotalCents > 0) {
+    const validation = validatePromo(promoCode, subtotalCents);
+    if (validation.ok && validation.discountCents !== undefined && validation.promo) {
+      discountCents = validation.discountCents;
+      appliedCode = validation.promo.code;
+    }
+  }
+
+  const discountedSubtotal = Math.max(0, subtotalCents - discountCents);
+  const taxCents = Math.round(discountedSubtotal * (DEFAULT_TAX_RATE / (1 + DEFAULT_TAX_RATE)));
   const shippingCents =
     subtotalCents === 0
       ? 0
-      : subtotalCents >= FREE_SHIPPING_THRESHOLD_CENTS
+      : discountedSubtotal >= FREE_SHIPPING_THRESHOLD_CENTS
         ? 0
         : STANDARD_SHIPPING_CENTS;
-  const totalCents = subtotalCents + shippingCents;
+  const totalCents = discountedSubtotal + shippingCents;
 
   return {
     items,
@@ -86,8 +101,8 @@ function computeTotals(items: readonly CartLineItem[]): CartSnapshot {
     taxCents,
     totalCents,
     currency: 'EUR',
-    discountCode: null,
-    discountCents: 0,
+    discountCode: appliedCode,
+    discountCents,
   };
 }
 
@@ -95,6 +110,7 @@ function computeTotals(items: readonly CartLineItem[]): CartSnapshot {
 export async function getCartSnapshot(): Promise<CartSnapshot> {
   const cookieStore = await cookies();
   const raw = cookieStore.get(CART_COOKIE)?.value;
+  const promoCode = cookieStore.get(PROMO_COOKIE)?.value ?? null;
   const entries = parseCartCookie(raw);
   if (entries.length === 0) return EMPTY_CART;
 
@@ -104,7 +120,7 @@ export async function getCartSnapshot(): Promise<CartSnapshot> {
     if (!product || product.status !== 'active') continue;
     items.push(lineItemFromProduct(product, entry.quantity));
   }
-  return computeTotals(items);
+  return computeTotals(items, promoCode);
 }
 
 /** Ajoute un produit au panier (ou augmente la quantité). */
@@ -156,10 +172,58 @@ export async function removeFromCart(slug: string): Promise<CartSnapshot> {
   return getCartSnapshot();
 }
 
-/** Vide le panier complet. */
+/** Vide le panier complet (et le code promo associé). */
 export async function clearCart(): Promise<CartSnapshot> {
   await persistCartCookie([]);
+  await clearPromoCookie();
   return EMPTY_CART;
+}
+
+/**
+ * Tente d'appliquer un code promo au panier courant. Valide le code contre
+ * les promos mock + le subtotal du panier. Ne persiste le code qu'en cas
+ * de succès. Renvoie `{ snapshot, validation }` — le snapshot reflète le
+ * nouveau total avec la remise.
+ */
+export async function applyPromoCode(code: string): Promise<{
+  snapshot: CartSnapshot;
+  error: string | null;
+}> {
+  const snapshot = await getCartSnapshot();
+  const normalized = normalizePromoCode(code);
+  if (!normalized) {
+    return { snapshot, error: 'Code manquant' };
+  }
+  const validation = validatePromo(normalized, snapshot.subtotalCents);
+  if (!validation.ok) {
+    return { snapshot, error: validation.message ?? 'Code invalide' };
+  }
+  // Persiste et renvoie le nouveau snapshot (re-computed avec remise)
+  await persistPromoCookie(normalized);
+  const next = await getCartSnapshot();
+  return { snapshot: next, error: null };
+}
+
+/** Retire le code promo appliqué. */
+export async function removePromoCode(): Promise<CartSnapshot> {
+  await clearPromoCookie();
+  return getCartSnapshot();
+}
+
+async function persistPromoCookie(code: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(PROMO_COOKIE, code, {
+    path: '/',
+    maxAge: CART_COOKIE_MAX_AGE_SECONDS,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: false,
+  });
+}
+
+async function clearPromoCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(PROMO_COOKIE);
 }
 
 async function persistCartCookie(entries: readonly RawCartEntry[]) {

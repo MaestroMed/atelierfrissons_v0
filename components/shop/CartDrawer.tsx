@@ -11,6 +11,7 @@ import { Fleuron } from '@/components/layout/Fleuron';
 import { cn } from '@/lib/utils';
 import { formatPriceCents, pluralize } from '@/lib/format';
 import { CartItem } from './CartItem';
+import { PromoCodeField } from './PromoCodeField';
 
 interface CartDrawerProps {
   /** Snapshot initial du panier (depuis le Server Component Header). */
@@ -128,11 +129,22 @@ export function CartDrawer({ initialSnapshot }: CartDrawerProps) {
           {/* Footer (récap + CTA) */}
           {!isEmpty ? (
             <footer className="border-encre/10 bg-ivoire border-t px-6 py-5">
+              {/* Code promo */}
+              <div className="mb-4">
+                <PromoCodeField snapshot={snapshot} onSnapshotChange={setSnapshot} />
+              </div>
+
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-encre/70">Sous-total</dt>
                   <dd className="tabular text-encre">{formatPriceCents(snapshot.subtotalCents)}</dd>
                 </div>
+                {snapshot.discountCents > 0 ? (
+                  <div className="text-or-dark flex justify-between">
+                    <dt>Remise ({snapshot.discountCode})</dt>
+                    <dd className="tabular">− {formatPriceCents(snapshot.discountCents)}</dd>
+                  </div>
+                ) : null}
                 <div className="flex justify-between">
                   <dt className="text-encre/70">Livraison</dt>
                   <dd className="tabular text-encre">
