@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Check, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Gift, Lock } from 'lucide-react';
 import { placeOrderAction } from '@/lib/checkout/actions';
 import {
   contactSchema,
@@ -55,6 +55,8 @@ export function CheckoutForm({ initialEmail = '', cart }: CheckoutFormProps) {
     billingSameAsShipping: true,
     shippingMethod: 'standard',
     notes: '',
+    isGift: false,
+    giftWrap: false,
     giftMessage: '',
     consentMarketing: false,
     consentTerms: true,
@@ -335,14 +337,79 @@ export function CheckoutForm({ initialEmail = '', cart }: CheckoutFormProps) {
                 hint="Code d’immeuble, instructions discrètes, etc."
               />
 
-              <Field
-                id="giftMessage"
-                label="Message cadeau (optionnel)"
-                value={form.giftMessage ?? ''}
-                onChange={(v) => setForm((p) => ({ ...p, giftMessage: v }))}
-                maxLength={280}
-                hint="Glissé dans la boîte sur une carte signée à la main."
-              />
+              {/* ──────── Gift options — bloc éditorial révélable ──────── */}
+              <fieldset
+                className={cn(
+                  'flex flex-col gap-4 border p-5 transition-colors',
+                  form.isGift ? 'border-or bg-or/5' : 'border-encre/15',
+                )}
+              >
+                <legend className="sr-only">Options cadeau</legend>
+                <label htmlFor="isGift" className="flex cursor-pointer items-start gap-3 text-sm">
+                  <input
+                    id="isGift"
+                    name="isGift"
+                    type="checkbox"
+                    checked={form.isGift}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        isGift: e.target.checked,
+                        // Reset automatique des sous-options si on décoche
+                        giftWrap: e.target.checked ? p.giftWrap : false,
+                        giftMessage: e.target.checked ? p.giftMessage : '',
+                      }))
+                    }
+                    className="accent-or mt-1 size-4"
+                  />
+                  <span className="flex flex-col gap-1">
+                    <span className="font-display text-noir inline-flex items-center gap-2 text-base font-medium">
+                      <Gift className="text-or-dark size-4" aria-hidden="true" strokeWidth={1.5} />
+                      Offrir ce rituel
+                    </span>
+                    <span className="text-encre/65 text-xs">
+                      La boîte reçoit une carte signée à la main, sans prix imprimé.
+                    </span>
+                  </span>
+                </label>
+
+                {/* Sous-options — révélées seulement si isGift */}
+                {form.isGift ? (
+                  <div className="border-or/20 animate-in slide-in-from-top-2 fade-in flex flex-col gap-4 border-t pt-4 duration-300 motion-reduce:animate-none">
+                    <label
+                      htmlFor="giftWrap"
+                      className="flex cursor-pointer items-start gap-3 text-sm"
+                    >
+                      <input
+                        id="giftWrap"
+                        name="giftWrap"
+                        type="checkbox"
+                        checked={form.giftWrap}
+                        onChange={(e) => setForm((p) => ({ ...p, giftWrap: e.target.checked }))}
+                        className="accent-or mt-1 size-4"
+                      />
+                      <span className="flex flex-col gap-0.5">
+                        <span className="text-noir font-medium">
+                          Emballage cadeau signé{' '}
+                          <span className="ui-caps text-or-dark ml-1 text-[10px]">Offert</span>
+                        </span>
+                        <span className="text-encre/65 text-xs">
+                          Papier crème, ruban or champagne, monogramme AF gaufré.
+                        </span>
+                      </span>
+                    </label>
+
+                    <Field
+                      id="giftMessage"
+                      label="Message de la carte (optionnel)"
+                      value={form.giftMessage ?? ''}
+                      onChange={(v) => setForm((p) => ({ ...p, giftMessage: v }))}
+                      maxLength={280}
+                      hint="280 caractères max · écrit sur une carte épaisse ivoire par notre équipe."
+                    />
+                  </div>
+                ) : null}
+              </fieldset>
 
               <CheckboxField
                 id="consentTerms"
@@ -430,6 +497,24 @@ export function CheckoutForm({ initialEmail = '', cart }: CheckoutFormProps) {
         <div className="border-encre/10 bg-ivoire-light border p-6 md:p-8">
           <h2 className="font-display text-noir text-xl font-medium">Votre commande</h2>
           <Fleuron variant="divider" size="sm" color="or" className="mt-3 opacity-70" />
+
+          {form.isGift ? (
+            <div className="border-or/40 bg-or/8 mt-4 flex items-start gap-2.5 border px-3 py-2.5 text-xs">
+              <Gift
+                className="text-or-dark mt-0.5 size-3.5 shrink-0"
+                aria-hidden="true"
+                strokeWidth={1.5}
+              />
+              <div className="flex flex-col gap-0.5">
+                <span className="ui-caps text-or-dark">Commande offerte</span>
+                <span className="text-encre/70">
+                  {form.giftWrap ? 'Emballage signé · ' : ''}
+                  {form.giftMessage ? 'Carte signée à la main' : 'Sans prix imprimé'}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           <ul className="mt-5 space-y-3 text-sm">
             {cart.items.map((item) => (
               <li key={item.productId} className="flex items-baseline justify-between gap-3">

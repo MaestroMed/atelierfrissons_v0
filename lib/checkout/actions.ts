@@ -61,6 +61,9 @@ export async function placeOrderAction(input: CheckoutInput): Promise<PlaceOrder
     itemCount: cart.itemCount,
     totalCents,
     shippingMethod: data.shippingMethod,
+    isGift: data.isGift,
+    giftWrap: data.giftWrap,
+    hasGiftMessage: data.giftMessage ? data.giftMessage.length > 0 : false,
   });
 
   // Track Klaviyo "Placed Order" (no-op si pas de creds)

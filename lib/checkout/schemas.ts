@@ -35,6 +35,10 @@ export const checkoutSchema = z
     billingAddress: addressSchema.optional(),
     shippingMethod: z.enum(['standard', 'point-relais', 'express']).default('standard'),
     notes: z.string().max(500).optional().or(z.literal('')),
+    /** Si true, le message cadeau est pris en compte et l'emballage signature est ciré. */
+    isGift: z.boolean().default(false),
+    /** Emballage cadeau signé de la main (offert, brand signature). */
+    giftWrap: z.boolean().default(false),
     giftMessage: z.string().max(280).optional().or(z.literal('')),
     consentMarketing: z.boolean().default(false),
     /** Acceptation CGV — obligatoire (L221-5). */

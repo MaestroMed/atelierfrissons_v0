@@ -16,9 +16,18 @@ interface ProductReviewsSummary {
   averageRating: number;
 }
 
+interface ProductReviewEntry {
+  rating: number;
+  title?: string;
+  body: string;
+  authorName: string;
+  createdAt: Date;
+}
+
 export function buildProductSchema(
   product: Product,
   reviews: ProductReviewsSummary | null = null,
+  reviewEntries: readonly ProductReviewEntry[] = [],
 ): Record<string, unknown> {
   const priceValidUntil = new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0];
 
@@ -78,6 +87,23 @@ export function buildProductSchema(
             bestRating: 5,
             worstRating: 1,
           },
+        }
+      : {}),
+    ...(reviewEntries.length > 0
+      ? {
+          review: reviewEntries.slice(0, 10).map((r) => ({
+            '@type': 'Review',
+            reviewRating: {
+              '@type': 'Rating',
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            author: { '@type': 'Person', name: r.authorName },
+            datePublished: r.createdAt.toISOString(),
+            ...(r.title ? { name: r.title } : {}),
+            reviewBody: r.body,
+          })),
         }
       : {}),
     additionalProperty: Object.entries(product.specs ?? {}).map(([name, value]) => ({

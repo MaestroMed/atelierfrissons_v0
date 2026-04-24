@@ -12,10 +12,13 @@ import { WishlistButton } from '@/components/shop/WishlistButton';
 import { StickyProductBar } from '@/components/shop/StickyProductBar';
 import { RecentlyViewedTracker } from '@/components/shop/RecentlyViewedTracker';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
+import { ReviewsSection } from '@/components/shop/ReviewsSection';
+import { ReviewStars } from '@/components/shop/ReviewStars';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
 import { RelatedProducts } from '@/components/shop/RelatedProducts';
 import { getMockCategories, getMockProductBySlug, getMockProducts } from '@/lib/mock/products';
+import { getMockReviewsForProduct, summarizeReviews } from '@/lib/mock/reviews';
 import { buildProductSchema, buildFAQSchema } from '@/lib/seo/structured-data';
 
 interface PageProps {
@@ -89,6 +92,8 @@ export default async function ProductPage({ params }: PageProps) {
   const related = allProducts
     .filter((p) => p.id !== product.id && p.collection === product.collection)
     .slice(0, 3);
+  const reviews = getMockReviewsForProduct(product.slug);
+  const reviewSummary = summarizeReviews(reviews);
 
   const breadcrumb = [
     { label: 'Accueil', href: '/' },
@@ -99,7 +104,15 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <>
-      <JsonLd data={buildProductSchema(product)} />
+      <JsonLd
+        data={buildProductSchema(
+          product,
+          reviewSummary
+            ? { count: reviewSummary.count, averageRating: reviewSummary.averageRating }
+            : null,
+          reviews,
+        )}
+      />
       <JsonLd data={buildFAQSchema(PRODUCT_FAQ)} />
 
       <Container className="py-8 md:py-12">
@@ -126,6 +139,24 @@ export default async function ProductPage({ params }: PageProps) {
                   {product.tagline}
                 </p>
               ) : null}
+
+              {/* Note moyenne — cliquable pour scroller à la section avis */}
+              {reviewSummary ? (
+                <a
+                  href="#reviews-heading"
+                  className="group inline-flex items-center gap-2.5 text-sm"
+                  aria-label={`Voir les ${reviewSummary.count} avis (${reviewSummary.averageRating.toFixed(1)} sur 5)`}
+                >
+                  <ReviewStars rating={reviewSummary.averageRating} size="sm" />
+                  <span className="tabular text-encre/75 font-medium">
+                    {reviewSummary.averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-encre/55 group-hover:text-or-dark underline underline-offset-2 transition-colors">
+                    {reviewSummary.count} avis
+                  </span>
+                </a>
+              ) : null}
+
               <Fleuron variant="divider" size="md" color="or" className="mt-2 opacity-70" />
             </div>
 
@@ -294,6 +325,9 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
           <FAQAccordion items={PRODUCT_FAQ} />
         </section>
+
+        {/* Avis clients — Schema.org reviews + AggregateRating injectés au top */}
+        <ReviewsSection reviews={reviews} summary={reviewSummary} className="mt-20" />
       </Container>
 
       {/* Related products */}
