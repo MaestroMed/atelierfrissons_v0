@@ -256,10 +256,52 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ═══════ 6. TÉMOIGNAGES ═══════ */}
+      {/* ═══════ 6. EXPÉRIENCE CINÉMATIQUE ═══════ */}
+      <section
+        aria-label="L’expérience Atelier Frisson"
+        className="relative isolate overflow-hidden"
+      >
+        <Link href="/rituel-inaugural" className="group block">
+          <div className="bg-noir text-ivoire relative flex min-h-[50vh] flex-col items-center justify-center overflow-hidden py-24 md:py-32">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-50 transition-opacity duration-1000 [background:radial-gradient(ellipse_at_30%_40%,rgba(201,163,107,0.18)_0%,transparent_55%),radial-gradient(ellipse_at_85%_70%,rgba(139,20,36,0.15)_0%,transparent_60%)] group-hover:opacity-80"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.018)_1px,transparent_1px)] [background-size:3px_3px] mix-blend-overlay"
+            />
+            <ScrollReveal>
+              <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-6 px-6 text-center md:px-10">
+                <p className="ui-caps text-or/80 inline-flex items-center gap-3 text-xs">
+                  <span aria-hidden="true" className="bg-or inline-block h-px w-8" />
+                  Une expérience éditoriale
+                  <span aria-hidden="true" className="bg-or inline-block h-px w-8" />
+                </p>
+                <h2 className="font-display text-[clamp(2.5rem,5vw,4.5rem)] leading-[1.05] font-medium transition-transform duration-700 group-hover:scale-[1.02]">
+                  Le rituel <span className="font-italic-editorial text-or">inaugural</span>
+                </h2>
+                <p className="font-italic-editorial text-ivoire/75 max-w-xl text-lg md:text-xl">
+                  Six chapitres pour comprendre pourquoi un objet bien conçu change le rapport au
+                  temps.
+                </p>
+                <span className="ui-caps text-or group-hover:text-or-light mt-4 inline-flex items-center gap-2 text-xs transition-all group-hover:gap-3">
+                  Commencer l’expérience
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </span>
+                <span className="ui-caps text-ivoire/45 text-[10px]">
+                  ~ 3 minutes de lecture · scrollytelling
+                </span>
+              </div>
+            </ScrollReveal>
+          </div>
+        </Link>
+      </section>
+
+      {/* ═══════ 7. TÉMOIGNAGES ═══════ */}
       <Testimonials />
 
-      {/* ═══════ 7. NEWSLETTER ÉDITORIALE ═══════ */}
+      {/* ═══════ 8. NEWSLETTER ÉDITORIALE ═══════ */}
       <section
         aria-label="Newsletter éditoriale"
         className="bg-ivoire-dark relative py-24 md:py-28"
@@ -286,10 +328,10 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ═══════ 8. TRUST SIGNALS ═══════ */}
+      {/* ═══════ 9. TRUST SIGNALS ═══════ */}
       <TrustSignals />
 
-      {/* ═══════ 9. Wordmark signature (transition vers footer) ═══════ */}
+      {/* ═══════ 10. Wordmark signature (transition vers footer) ═══════ */}
       <section aria-hidden="true" className="bg-ivoire-light py-12 text-center">
         <Fleuron variant="crown" size="md" color="or" className="mx-auto opacity-80" />
         <Wordmark as="p" size="sm" color="noir" className="mt-3 opacity-70" />
