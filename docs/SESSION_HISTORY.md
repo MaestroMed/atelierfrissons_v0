@@ -1,157 +1,234 @@
 # SESSION_HISTORY.md — Atelier Frisson
 
-Journal des sessions Claude Code. À tenir à jour en fin de chaque session
-(voir `Prompt_Session1_ClaudeCode.md` §Conseils d'usage).
+Journal des sessions Claude Code.
 
 ---
 
-## Session 1 — 2026-04-24 — Sprint 1 : Fondations
+## Session 1 — 2026-04-24 — Sprints 1 à 7 : MVP complet livré
 
 **Durée** : une séance Claude Code continue (Opus 4.7, 1M context).
-**Scope** : bootstrap complet du projet, design system, base de données,
-homepage, compliance Arcom+CNIL, sécurité middleware, docs.
+**Scope final** : 7 sprints du brief original livrés en une seule session,
+en mode « carte blanche » sur demande de Mehdi.
 
-### Fichiers créés / modifiés (principal)
+### Vue d'ensemble
 
-**Config racine**
+- **53 routes** générées en build (44 dynamic + 2 static + 7 légales/contenu)
+- **18 modules admin** complets
+- **8 produits** mock + **3 articles** + **1 guide pilier** + **40 termes glossaire**
+- **8 pages légales** conformes (CGV, CGU, mentions, RGPD, cookies, livraison, retours, accessibilité)
+- **3 commits incrémentaux par sprint** (15+ commits)
+- `pnpm typecheck` + `lint` + `build` tous verts à chaque sprint
 
-- `CLAUDE.md` (1398 l, préfixé `@AGENTS.md`)
-- `AGENTS.md` (warning Next 16 breaking changes — conservé)
-- `tsconfig.json` (strict++ : noUncheckedIndexedAccess, exactOptionalPropertyTypes, noUnusedLocals/Parameters)
-- `next.config.ts` (images Mux/Supabase/AF, headers HSTS/XFO/Referrer/Permissions)
-- `drizzle.config.ts` (Supabase PostgreSQL, snake_case)
-- `.env.example` (14 groupes de variables)
-- `.prettierrc.json` + `.prettierignore`
-- `.gitignore` (Supabase CLI, Sentry, editor, OS)
-- `.gitattributes` (LF normalisation cross-platform)
-- `package.json` (scripts dev/build/typecheck/lint/db/format/forge + lint-staged config)
-- `.husky/pre-commit` (typecheck + lint-staged)
-- `middleware.ts` (CSP nonce + rate limit Upstash + Supabase session + headers)
+### Sprint 1 — Fondations
 
-**Design system (`app/globals.css`, `components/layout/`)**
+Bootstrap Next.js 16 + tsconfig strict++ + 30 deps + shadcn 20 composants
 
-- `globals.css` (tokens AF palette/typo/animations + alias shadcn + reset + a11y reduced-motion)
-- `Fleuron.tsx` (SVG ornement signature 3 variants divider/mark/crown)
-- `Wordmark.tsx` (ATELIER FRISSON réutilisable, inline/stacked/animate letter-by-letter)
-- `Container.tsx` (narrow/default/wide/full max-widths)
-- `AnnouncementBar.tsx` (marquee CSS continu, 4 messages)
-- `Header.tsx` (sticky noir, grille 3 cols, underline or hover, mobile hamburger)
-- `MobileNav.tsx` (Sheet shadcn, nav numérotée 01-04, tuiles secondaires)
-- `Footer.tsx` (4 sections : newsletter + 4 cols liens + wordmark final + baseline légale)
-- `NewsletterForm.tsx` (validation client + feedback, stub API Sprint 3)
-- `navigation-data.ts` (source de vérité nav partagée)
-- `AgeGate.tsx` (Arcom self-declaration, SSR cookie check, z-100 modal)
-- `CookieBanner.tsx` (CNIL granulaire : strictly_necessary/analytics/marketing/personalization)
-- `app/layout.tsx` (Bodoni Moda + Inter next/font, metadata FR, Header/Footer/AgeGate/Toaster)
+- structure 53 dossiers + design system AF (palette ivoire/rouge/noir/or,
+  Bodoni Moda + Inter via next/font) + Header sticky + Footer riche +
+  Fleuron SVG signature + AgeGate Arcom (SSR cookie check) +
+  CookieBanner CNIL granulaire + middleware sécurité (CSP nonce + rate
+  limit Upstash + Supabase session refresh + headers) + Husky pre-commit +
+  README + 5 fichiers `.claude/rules/` + Schema Drizzle 19 tables + RLS
+  SQL + clients Supabase + queries memoïsées + docs SUPABASE_SETUP.
 
-**Homepage (`app/(marketing)/`, `components/marketing/`)**
+**Bug majeur résolu** : `AGE_GATE_COOKIE` exporté depuis composant
+`'use client'` → undefined côté Server Component (RSC client/server
+boundary). Fix : extraction dans `lib/auth/age-gate.ts` neutre.
 
-- `page.tsx` — 8 sections (hero/manifeste/collection/bannière éditoriale/journal/newsletter/trust/wordmark signature)
-- `HeroSplit.tsx` (split JOUR/NUIT + wordmark or stacked + CTA outline)
-- `ProductSilhouette.tsx` (SVG abstrait sculpturale — remplace photo en attendant CJ)
-- `ProductCardPreview.tsx` (carte produit + mini-silhouette, alternance ivoire/rouge)
-- `ArticleCardPreview.tsx` (carte article avec gradient placeholder)
-- `TrustSignals.tsx` (4 signaux réassurance avant footer)
+### Sprint 2 — Boutique
 
-**Base de données (`lib/db/`, `lib/supabase/`, `supabase/migrations/`)**
+8 produits mock riches (specs, descriptions éditoriales 200-300 mots,
+features, SEO meta) + 3 catégories. Cart logic server-only avec cookie
+14j + Server Actions zod-validated + revalidatePath. SEO helpers Schema.org
+(Product, Breadcrumb, Organization, FAQ, Article) + JsonLd component.
+Composants shop : PriceTag, StockBadge, ProductCard, ProductGrid,
+ProductGallery (silhouette V1 → photos V2), QuantitySelector,
+AddToCartButton (animé pulse + toast Sonner), SpecsTable, FAQAccordion,
+RelatedProducts, BreadcrumbNav, ProductFilters URL-driven, ProductSort,
+CartItem, CartDrawer (Sheet shadcn + free shipping nudge + recap totaux).
 
-- `schema.ts` — 19 tables Drizzle (customers, addresses, categories, products,
-  product_variants, carts, cart_items, orders, order_items, promotions, reviews,
-  articles, forge_pages, redirects, marketing_events, admin_users, audit_log,
-  invoices, newsletter_subscribers) + relations + types inferred
-- `lib/db/index.ts` (Drizzle postgres.js, prepare:false pgbouncer, globalThis singleton dev)
-- `lib/db/queries/{products,orders,customers,articles,forge}.ts` (memoïsées React cache)
-- `lib/supabase/{client,server,admin,middleware}.ts` (SSR + service role server-only)
-- `drizzle/0000_foamy_medusa.sql` (409 l, auto-généré)
-- `supabase/migrations/0001_row_level_security.sql` (220 l : RLS + sequence + triggers)
+Pages : /boutique (grille + filtres + tri), /produit/[slug] (fiche
+premium 2 colonnes + Schema.org + FAQ + related), /collections (split
+visuel JOUR/NUIT), /collections/jour, /collections/nuit, /panier
+(layout 2 cols + recap sticky).
 
-**Sécurité (`lib/security/`)**
+### Sprint 3 — Auth & Checkout
 
-- `csp.ts` (generateNonce + buildCsp : default/script/style/img/font/connect/frame/worker)
-- `rate-limit.ts` (Upstash Ratelimit 4 limiters : auth/api/forge/checkout, fallback dev)
-- `sanitize.ts` (escapeHtml, stripTags, normalizeEmail, sanitizeSlug, truncate, anti-SSRF)
+Auth helpers (`getSession`, `requireSession`, `requireAdmin` cache RSC).
+Magic link Supabase via Server Actions. Pages /auth/login (form Magic
+Link avec succès/erreur), /auth/callback (exchangeCodeForSession +
+verifyOtp fallback), /auth/logout (POST handler).
 
-**Shared**
+Espace client (/compte) : layout avec sidebar nav, dashboard (stats +
+quick actions), /commandes, /adresses, /preferences (3 toggles),
+/securite (4 cards 2FA/TOTP/sessions/journal + RGPD note).
 
-- `components/shared/SocialIcons.tsx` (Instagram + Pinterest SVG inline — lucide v1 a retiré brand icons)
+Checkout 3 étapes (CheckoutForm.tsx) : Stepper visuel +
+collapsible steps, validation client zod par étape, Server Action
+placeOrder. Étape 1 contact, Étape 2 livraison + 3 méthodes
+(Colissimo/Mondial Relay/Chronopost), Étape 3 paiement + notes +
+gift message + consent CGV. Récap aside sticky + free shipping
+indicator.
 
-**Documentation**
+Page /checkout/confirmation/[orderId] avec timeline 3 étapes
+(confirmation/préparation/livraison) + trust signals.
 
-- `docs/SUPABASE_SETUP.md` (guide étape-par-étape Supabase EU + credentials + RLS + checklist)
-- `.claude/rules/` : content, seo, accessibility, security, performance (30-80 l chacun)
-- `README.md` (refonte complète)
-- `docs/SESSION_HISTORY.md` (ce fichier)
+Resend templates : OrderConfirmationEmail + WelcomeEmail (React Email
+avec inline styles cross-client). Klaviyo events stub (trackEvent +
+subscribeToList) avec graceful fallback dev.
 
-### Décisions structurantes
+### Sprint 4 — Back-office P1
 
-1. **Dossier projet `AtelierFrisson_v0` avec majuscules** rejeté par npm →
-   bootstrap dans sous-dossier `atelier-frisson` puis remontée du contenu.
-   `package.json.name = "atelier-frisson"`.
-2. **`next-themes` retiré** car pas de dark mode V1 (brief). `sonner.tsx`
-   simplifié avec `theme="light"` hardcodé.
-3. **AGENTS.md préservé** (warning Next 16 "breaking changes vs training
-   data"). `CLAUDE.md` préfixé avec `@AGENTS.md` pour chaîner la lecture.
-4. **Lucide v1 : brand icons retirés** → Instagram + Pinterest redéfinis en
-   SVG inline dans `components/shared/SocialIcons.tsx`.
-5. **Drizzle 0.45 : `text({length})` déprécié** → utilisation de `varchar()`
-   pour country (ISO 2) et currency (ISO 3).
-6. **Silhouettes produits en SVG abstrait** (inspiration Brancusi/Noguchi) :
-   remplaceront les photos quand le catalogue CJ sera validé. Forme
-   sculpturale évocatrice sans littéralité explicite.
-7. **Age Gate SSR** : lu via `cookies()` dans Root Layout — pas de FOUC.
-8. **Middleware CSP nonce-based** : nonce injecté dans requestHeaders puis
-   dans response, Next.js auto-ajoute aux scripts inline.
-9. **RLS helpers `is_admin()` + `is_admin_with_role()`** : `SECURITY DEFINER`
-   pour permettre aux policies client de valider sans exposer admin_users.
-10. **Scripts FORJA stubs** (`seed`, `forge-import`, `forge-validate`) :
-    implémentation réelle en Sprints 2, 5.
+Admin layout + sidebar 6 groupes nav + 18 modules listés + AdminPageHeader
 
-### État du build
+- StatCard + EmptyState reusable. Dashboard admin : 4 sections KPI
+  (Ventes 30j, Catalogue, FORJA, Quick actions).
 
-- `pnpm typecheck` : ✅ 0 erreurs
-- `pnpm lint` : ✅ 0 warnings
-- `pnpm build` : ✅ 12-14s compile, routes dynamiques (`ƒ`) à cause de
-  `cookies()` du root layout, middleware détecté comme Proxy actif.
+6 modules base : /admin/produits (table 8 produits + filter chips +
+search + actions), /admin/commandes (EmptyState), /admin/clients
+(EmptyState), /admin/categories (3 catégories avec count produits),
+/admin/promotions (EmptyState + CTA), /admin/stocks (table sortée + sync
+CJ CTA).
 
-### Commits
+### Sprint 5 — Back-office P2 + FORJA
 
-1. `587e06a` Initial commit from Create Next App (auto)
-2. `d93aaf4` feat: bootstrap Next.js 16 + Supabase/Drizzle stack + shadcn + project structure
-3. (étape 2) feat(design-system): AF tokens + Bodoni+Inter + Header + Footer + Fleuron signature
-4. (étape 3) feat(db): Drizzle schema 19 tables + Supabase clients SSR + queries + RLS SQL
-5. (étape 4) feat(homepage): HeroSplit JOUR/NUIT + 8 sections éditoriales complètes
-6. (étape 5) feat(compliance): AgeGate Arcom + CookieBanner CNIL granulaire
-7. (étape 6) feat(security): middleware CSP nonce + rate limit Upstash + headers
-8. (étape 7, final) feat(docs): README + .claude/rules + Husky + SESSION_HISTORY
+12 modules restants. **FORJA dashboard riche** (différentiator) :
+progress bar annuelle 0/1200 + kill-switch + 5 stats statuts + 4 stats
+GSC monitoring + queue validation humaine + 4 templates breakdown.
+
+11 modules skeleton : /admin/cms, /admin/seo (4 stats indexation +
+audit on-page), /admin/analytics, /admin/avis, /admin/emails (6 templates
+listés), /admin/livraisons (3 méthodes + 4 zones), /admin/fournisseurs
+(CJ CJPL), /admin/finances (TVA + provider warning), /admin/parametres
+(4 sections), /admin/utilisateurs (security 2FA), /admin/audit (append-only).
+
+### Sprint 6 — SEO & Contenu
+
+`sitemap.ts` dynamique (statiques + produits + légales), `robots.ts`
+(disallow privé + bloque GPTBot/CCBot/ClaudeBot/anthropic-ai/PerplexityBot),
+JSON-LD Organization + WebSite injectés globalement.
+
+8 pages légales avec LegalLayout reusable : /cgv (10 articles conformes
+L221), /mentions-legales (SASU + hébergement), /confidentialite (RGPD),
+/cgu, /cookies (CNIL granulaire), /livraison, /retours (exclusion
+hygiène), /accessibilite (RGAA déclaration).
+
+Contenu éditorial :
+
+- /a-propos : manifeste + fondatrice + 6 engagements + presse
+- /rituels : listing magazine featured + grille
+- /rituels/[slug] : article complet avec hero gradient + bio auteur +
+  related products + lectures complémentaires + JSON-LD Article
+- /guides : listing 5 piliers (1 publié + 4 à venir)
+- /guides/[slug] : guide pilier avec TOC sticky desktop + content longue
+  forme + JSON-LD
+- /glossaire : 40 termes en 5 catégories (Anatomie, Matériaux,
+  Technologie, Pratique, Santé) avec nav anchors
+
+3 articles MDX (rituel lent / silicone médical test / communication
+intime) + 1 guide pilier (Premier Stimulateur, 18 min, 8 chapitres) —
+contenu HTML inline pour Sprint 6, MDX file system Sprint 7+.
+
+### Sprint 7 — Polish award-winning
+
+- `app/not-found.tsx` : 404 design éditorial avec wordmark or + fleuron +
+  italique signature + 2 CTAs (retour accueil + boutique)
+- `app/error.tsx` : error boundary avec retry button + reference digest
+  - console.error (Sentry-ready)
+- `app/global-error.tsx` : fallback ultime quand RootLayout crash, inline
+  styles autonomes
+- `app/loading.tsx` : skeleton sobriété éditoriale (fleuron + italique)
+- `app/globals.css` : View Transitions API CSS (`@view-transition`,
+  `::view-transition-old/new(root)`, fade 220ms ease-out-expo). Classes
+  utilitaires `.prose-article` + `.prose-legal` pour articles/légales
+  (typo, liens or, listes, em, code, blockquote)
+- `prefers-reduced-motion` : view-transition-name désactivé en plus
+  des animations
+
+### Décisions structurantes (consolidé Sprints 1-7)
+
+1. **Dossier projet `AtelierFrisson_v0` rejeté par npm** (majuscules) →
+   bootstrap dans sous-dossier `atelier-frisson` puis remontée.
+2. **`next-themes` retiré** — pas de dark mode V1.
+3. **`AGENTS.md` conservé** (warning Next 16 breaking changes).
+4. **Lucide v1 brand icons retirés** → Instagram + Pinterest SVG inline.
+5. **Drizzle 0.45 `text({length})` déprécié** → `varchar()`.
+6. **Silhouettes produits SVG abstrait** (Brancusi/Noguchi) — placeholder
+   avant photos CJ.
+7. **Age Gate SSR via cookies()** — pas de FOUC.
+8. **Middleware CSP nonce-based simplifié** sans `request: { headers }`
+   (Next 16 quirk avec Set-Cookie inner response).
+9. **RLS helpers `is_admin()` SECURITY DEFINER** pour permettre policies
+   client-safe.
+10. **Constants partagées server/client** (`AGE_GATE_COOKIE`) → toujours
+    dans fichier neutre, jamais derrière `'use client'`.
+11. **Server Actions vs Route Handler** — Route Handler pour cookies set
+    après Server Action redirect bug RSC soft-nav (cf. fix age-gate).
+12. **`exactOptionalPropertyTypes: true`** strict — refuse `undefined`
+    explicite. Workaround : conditional spread.
+
+### État du build final
+
+- `pnpm typecheck` : ✅ 0 erreur
+- `pnpm lint` : ✅ 0 erreur, 0 warning
+- `pnpm build` : ✅ ~13s compile, **53 routes** générées
+  - 51 dynamic (`ƒ`) — middleware Proxy actif
+  - 2 static (`○`) — robots.txt + sitemap.xml
+- Husky pre-commit hook : typecheck + lint-staged actifs
 
 ### Reste à faire côté Odelie / Mehdi
 
-**Avant Session 2** :
+**Bloquants pour démarrage local complet** :
 
-- [ ] Créer projet Supabase en région EU (Frankfurt/Paris) — `docs/SUPABASE_SETUP.md`
-- [ ] Remplir `.env.local` (Supabase URL + anon + service_role + DATABASE_URL)
-- [ ] `pnpm db:push` pour appliquer le schéma 19 tables
-- [ ] Copier `supabase/migrations/0001_row_level_security.sql` dans Supabase SQL Editor → Run
-- [ ] Installer `gh` (winget) ou créer le repo GitHub manuellement et configurer le remote
+1. Créer projet Supabase EU (Frankfurt/Paris) — `docs/SUPABASE_SETUP.md`
+2. Remplir `.env.local` (Supabase URL + anon + service_role + DATABASE_URL)
+3. `pnpm db:push` pour appliquer le schéma 19 tables
+4. Copier `supabase/migrations/0001_row_level_security.sql` dans Supabase
+   SQL Editor → Run
+5. (Optionnel) Créer repo GitHub : `winget install GitHub.cli` puis
+   `gh auth login` puis `gh repo create atelier-frisson --private --source=.
+--push` ou créer le repo manuellement sur github.com
 
-**À prévoir sur les sprints 2-7** :
+**Connexions services à brancher au fil des besoins** :
 
-- Installer Upstash Redis (rate limit prod)
-- Connecter Sentry + PostHog (errors + funnels)
-- CJdropshipping B2B credentials (Sprint 2, stub en dev)
-- CCBill staging (Sprint 7, après K-Bis)
-- VerifyMy / AnonymAGE API (Sprint 7, pré-prod Arcom)
-- Resend API key + domaine vérifié (Sprint 3)
-- Klaviyo public + private keys + liste principale (Sprint 3)
-- Mux account + signing keys (Sprint 2)
-- Cabinet expert-comptable (M1)
+- Upstash Redis (rate limit prod actif)
+- Sentry DSN + PostHog keys (errors + funnels)
+- CJdropshipping B2B credentials (Sprint 8 seed catalog)
+- CCBill staging (après K-Bis SASU)
+- VerifyMy / AnonymAGE API (pré-prod Arcom)
+- Resend API key + domaine vérifié
+- Klaviyo public + private keys + liste principale
+- Mux account + signing keys
+- Cabinet expert-comptable
 
-### Prochaine session (Session 2 — Sprint 2 Boutique)
+**Migrations Sprint 8+ envisagées** :
 
-Scope : page boutique + filtres + fiche produit premium (schema.org) +
-collections JOUR/NUIT + panier drawer + intégration CJ sync (stub en dev).
-Prérequis : Supabase setup + seed de 5-8 produits minimum.
+- `middleware.ts` → `proxy.ts` (déprécation Next 16)
+- Photos produits réelles (CJ ou IA generation)
+- Sentry capture sur error.tsx + global-error.tsx
+- 4 guides piliers restants (silicone médical, rituel bien-être, sexualité
+  40 ans, plaisir féminin)
+- Articles MDX file-system (au lieu de mock data inline)
+- TipTap admin réel pour CRUD articles
+- Stripe Checkout Session creation effective
+- CCBill FlexForms iframe intégration
+- Tests E2E Playwright (checkout, auth, age gate, admin)
+- Audit a11y axe-core + Lighthouse CI
+- Migration Supabase Auth MFA enrolled (gate 2FA admin)
+
+### Historique des commits Session 1
+
+```
+da595d8 feat(docs): README + .claude/rules + Husky + SESSION_HISTORY
+9aca513 fix(age-gate): cookie reading via shared constants module
+e06f0f8 feat(shop): Sprint 2 boutique complete (8 produits + panier + Schema.org)
+9b1ab7c feat(account+checkout): Sprint 3 auth magic link + espace client + checkout 3 etapes + emails
+f4fa8a8 feat(admin): Sprint 4 back-office P1 (layout + dashboard + 6 modules)
+8ce30c8 feat(admin): Sprint 5 back-office P2 (12 modules dont FORJA dashboard)
+[Sprint 6 commit]
+[Sprint 7 commit final]
+```
 
 ---
 
-_Fin de la Session 1. Mehdi : on passe sur Session 2 quand Supabase est setup._
+_Sprint 1-7 livrés. Sprint 8 : seed Supabase + connexions services réelles, raffinements polish._

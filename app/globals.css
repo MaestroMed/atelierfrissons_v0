@@ -359,6 +359,117 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────
+ * View Transitions API — animations natives entre pages.
+ * Activé par défaut sur les transitions root + ProductCard ↔ /produit.
+ * Fallback gracieux navigateurs non-supporters (Firefox 2026 partiel).
+ * ────────────────────────────────────────────────────────────────── */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+::view-transition-old(root) {
+  animation-name: af-fade-out;
+}
+::view-transition-new(root) {
+  animation-name: af-fade-in;
+}
+
+@keyframes af-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes af-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Typographie éditoriale pour articles, guides, pages légales.
+ * Classes utilitaires `.prose-article`, `.prose-legal`.
+ * ────────────────────────────────────────────────────────────────── */
+@layer components {
+  .prose-article > * + *,
+  .prose-legal > * + * {
+    margin-top: 1.25em;
+  }
+  .prose-article h2,
+  .prose-legal h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.625rem;
+    color: var(--color-noir);
+    margin-top: 2.25em;
+    margin-bottom: 0.6em;
+    line-height: 1.2;
+  }
+  .prose-article h3,
+  .prose-legal h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.25rem;
+    color: var(--color-noir);
+    margin-top: 1.75em;
+    margin-bottom: 0.5em;
+  }
+  .prose-article a,
+  .prose-legal a {
+    color: var(--color-or-dark);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 200ms ease;
+  }
+  .prose-article a:hover,
+  .prose-legal a:hover {
+    color: var(--color-or);
+  }
+  .prose-article ul,
+  .prose-legal ul,
+  .prose-article ol,
+  .prose-legal ol {
+    padding-left: 1.5rem;
+    margin-block: 1em;
+  }
+  .prose-article ul li,
+  .prose-legal ul li {
+    list-style: disc;
+    margin-bottom: 0.4em;
+  }
+  .prose-article ol li,
+  .prose-legal ol li {
+    list-style: decimal;
+    margin-bottom: 0.4em;
+  }
+  .prose-article em,
+  .prose-legal em {
+    font-family: var(--font-display);
+    font-style: italic;
+  }
+  .prose-article code,
+  .prose-legal code {
+    background: rgba(10, 7, 6, 0.06);
+    padding: 0.1em 0.4em;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+  .prose-article blockquote,
+  .prose-legal blockquote {
+    border-left: 2px solid var(--color-or);
+    padding-left: 1.25rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--color-encre);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
  * Accessibilité : respect de prefers-reduced-motion.
  * ────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -369,5 +480,6 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    view-transition-name: none !important;
   }
 }
