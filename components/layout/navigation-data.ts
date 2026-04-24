@@ -8,13 +8,209 @@ export interface NavItem {
   href: string;
   /** Description courte pour MobileNav + aria-label du Footer. */
   hint?: string;
+  /** Configuration MegaMenu optionnelle (desktop uniquement). */
+  megaMenu?: MegaMenuConfig;
+}
+
+export interface MegaMenuLinkGroup {
+  title: string;
+  items: readonly { label: string; href: string; description?: string }[];
+}
+
+export interface MegaMenuProductPreview {
+  slug: string;
+  name: string;
+  tagline: string;
+  priceCents: number;
+  collection: 'jour' | 'nuit';
+}
+
+export interface MegaMenuEditorial {
+  caption: string;
+  headline: string;
+  /** HTML court, peut contenir <em> ou <strong>. */
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+  /** Tonalité visuelle du panneau éditorial (fond). */
+  tone: 'jour' | 'nuit' | 'or';
+}
+
+export interface MegaMenuConfig {
+  /** Groupes de liens (colonne gauche, 1-2 colonnes). */
+  groups: readonly MegaMenuLinkGroup[];
+  /** 2-3 produits mis en avant (colonne centre). Optionnel. */
+  products?: readonly MegaMenuProductPreview[];
+  /** Bloc éditorial (colonne droite). Optionnel. */
+  editorial?: MegaMenuEditorial;
 }
 
 export const PRIMARY_NAV: readonly NavItem[] = [
-  { label: 'Boutique', href: '/boutique', hint: 'Tous nos objets de rituel' },
-  { label: 'Collections', href: '/collections', hint: 'Jour, Nuit et capsules signatures' },
-  { label: 'À propos', href: '/a-propos', hint: 'La maison, la fondatrice, nos engagements' },
-  { label: 'Rituels', href: '/rituels', hint: 'Le magazine éditorial Atelier Frisson' },
+  {
+    label: 'Boutique',
+    href: '/boutique',
+    hint: 'Tous nos objets de rituel',
+    megaMenu: {
+      groups: [
+        {
+          title: 'Parcourir',
+          items: [
+            {
+              label: 'Toute la boutique',
+              href: '/boutique',
+              description: 'Huit objets en silicone médical',
+            },
+            {
+              label: 'Collection JOUR',
+              href: '/collections/jour',
+              description: 'Matins lents, matières claires',
+            },
+            {
+              label: 'Collection NUIT',
+              href: '/collections/nuit',
+              description: 'Rituels du soir, laque profonde',
+            },
+            {
+              label: 'Sélection signature',
+              href: '/boutique?sort=featured',
+              description: 'Les pièces mises en lumière',
+            },
+          ],
+        },
+        {
+          title: 'Pratique',
+          items: [
+            { label: 'Livraison discrète', href: '/livraison' },
+            { label: 'Politique de retours', href: '/retours' },
+            { label: 'Certification des matières', href: '/guides/silicone-medical' },
+            { label: 'Comparer les objets', href: '/comparer' },
+          ],
+        },
+      ],
+      products: [
+        {
+          slug: 'premier-frisson',
+          name: 'Premier Frisson',
+          tagline: 'Un objet pensé pour les premiers gestes lents.',
+          priceCents: 8900,
+          collection: 'jour',
+        },
+        {
+          slug: 'velours-rouge',
+          name: 'Velours Rouge',
+          tagline: 'Le rituel du soir, finition miroir.',
+          priceCents: 12900,
+          collection: 'nuit',
+        },
+      ],
+      editorial: {
+        caption: 'Emballage signature',
+        headline: 'Livré dans une boîte neutre, signée à la main',
+        body: 'Aucun logo visible à l’extérieur. Une carte ivoire, un ruban or, un monogramme AF gaufré — <em>notre manière de respecter la confidentialité du rituel</em>.',
+        ctaLabel: 'Voir la livraison',
+        ctaHref: '/livraison',
+        tone: 'or',
+      },
+    },
+  },
+  {
+    label: 'Collections',
+    href: '/collections',
+    hint: 'Jour, Nuit et capsules signatures',
+    megaMenu: {
+      groups: [
+        {
+          title: 'Les deux registres',
+          items: [
+            {
+              label: 'JOUR — Ivoire & Albâtre',
+              href: '/collections/jour',
+              description: 'Lumière, douceur, matière claire',
+            },
+            {
+              label: 'NUIT — Rouge laqué & Noir profond',
+              href: '/collections/nuit',
+              description: 'Présence, densité, rituel du soir',
+            },
+          ],
+        },
+        {
+          title: 'Capsules signatures',
+          items: [
+            {
+              label: 'Collection inaugurale',
+              href: '/boutique?sort=newest',
+              description: 'Les six premières pièces',
+            },
+            {
+              label: 'Édition limitée — Laque Minuit',
+              href: '/produit/laque-minuit',
+              description: 'Pièce de collection, 100 exemplaires',
+            },
+          ],
+        },
+      ],
+      editorial: {
+        caption: 'Direction artistique',
+        headline: 'Pourquoi nous avons choisi deux registres',
+        body: 'Parce qu’un rituel du matin ne se tient pas comme une conversation du soir. <strong>Chaque collection est une manière d’habiter le temps.</strong>',
+        ctaLabel: 'Lire le manifeste',
+        ctaHref: '/a-propos',
+        tone: 'nuit',
+      },
+    },
+  },
+  {
+    label: 'À propos',
+    href: '/a-propos',
+    hint: 'La maison, la fondatrice, nos engagements',
+  },
+  {
+    label: 'Rituels',
+    href: '/rituels',
+    hint: 'Le magazine éditorial Atelier Frisson',
+    megaMenu: {
+      groups: [
+        {
+          title: 'Le Journal',
+          items: [
+            { label: 'Tous les articles', href: '/rituels', description: 'Le magazine éditorial' },
+            {
+              label: 'Bien-être',
+              href: '/rituels/categorie/bien-etre',
+              description: 'Rituels lents, conseils sexologue',
+            },
+            {
+              label: 'Couple',
+              href: '/rituels/categorie/couple',
+              description: 'Communication, désir, long terme',
+            },
+            {
+              label: 'Décryptage',
+              href: '/rituels/categorie/decryptage',
+              description: 'Matières, normes, fabrication',
+            },
+          ],
+        },
+        {
+          title: 'Guides piliers',
+          items: [
+            { label: 'Tous les guides', href: '/guides' },
+            { label: 'Silicone médical', href: '/guides/silicone-medical' },
+            { label: 'Le glossaire', href: '/glossaire' },
+          ],
+        },
+      ],
+      editorial: {
+        caption: 'À lire maintenant',
+        headline: 'Pourquoi on sous-estime le pouvoir d’un rituel lent',
+        body: 'Dans une époque qui célèbre la vitesse, <em>ralentir devient un acte radical de soin</em>. 7 minutes de lecture.',
+        ctaLabel: 'Lire l’article',
+        ctaHref: '/rituels/pouvoir-rituel-lent',
+        tone: 'jour',
+      },
+    },
+  },
 ] as const;
 
 export const SECONDARY_NAV: readonly NavItem[] = [

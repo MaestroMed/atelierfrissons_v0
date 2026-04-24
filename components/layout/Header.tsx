@@ -1,15 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { Menu, Search, UserRound, ShoppingBag } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, Menu, Search, UserRound, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Container } from './Container';
 import { Wordmark } from './Wordmark';
 import { Fleuron } from './Fleuron';
 import { AnnouncementBar } from './AnnouncementBar';
 import { MobileNav } from './MobileNav';
+import { MegaMenu } from './MegaMenu';
 import { PRIMARY_NAV } from './navigation-data';
+
+/** Délai avant fermeture auto du MegaMenu sur mouseleave — évite le flicker. */
+const MEGAMENU_CLOSE_DELAY_MS = 180;
 
 interface HeaderProps {
   /** Nombre d'articles dans le panier (défaut 0 tant que la DB n'est pas branchée). */
@@ -26,8 +31,11 @@ interface HeaderProps {
  * Ombre fine + léger backdrop-blur quand scrollé.
  */
 export function Header({ cartCount = 0 }: HeaderProps) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openMenuIdx, setOpenMenuIdx] = useState<number | null>(null);
+  const closeTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -35,6 +43,44 @@ export function Header({ cartCount = 0 }: HeaderProps) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Esc pour fermer le MegaMenu + fermeture auto au changement de route
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openMenuIdx !== null) {
+        setOpenMenuIdx(null);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openMenuIdx]);
+
+  useEffect(() => {
+    // Ferme à chaque navigation (pathname change)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenMenuIdx(null);
+  }, [pathname]);
+
+  const clearCloseTimer = () => {
+    if (closeTimer.current !== null) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  const scheduleClose = () => {
+    clearCloseTimer();
+    closeTimer.current = window.setTimeout(() => {
+      setOpenMenuIdx(null);
+    }, MEGAMENU_CLOSE_DELAY_MS);
+  };
+
+  const openMenu = (idx: number) => {
+    clearCloseTimer();
+    setOpenMenuIdx(idx);
+  };
+
+  const activeMenu = openMenuIdx !== null ? PRIMARY_NAV[openMenuIdx]?.megaMenu : undefined;
 
   return (
     <header
@@ -71,23 +117,49 @@ export function Header({ cartCount = 0 }: HeaderProps) {
           <nav
             aria-label="Navigation principale"
             className="hidden items-center gap-7 lg:flex xl:gap-10"
+            onMouseLeave={scheduleClose}
           >
-            {PRIMARY_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'ui-caps text-ivoire/85 transition-colors',
-                  'hover:text-or focus-visible:text-or',
-                  'relative after:absolute after:right-0 after:-bottom-1.5 after:left-0',
-                  'after:bg-or after:h-px after:origin-center after:scale-x-0',
-                  'after:transition-transform after:duration-300',
-                  'hover:after:scale-x-100 focus-visible:after:scale-x-100',
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {PRIMARY_NAV.map((item, idx) => {
+              const hasMega = !!item.megaMenu;
+              const isOpen = openMenuIdx === idx;
+              const menuId = `megamenu-${idx}`;
+              return (
+                <div
+                  key={item.href}
+                  onMouseEnter={() => (hasMega ? openMenu(idx) : clearCloseTimer())}
+                  onFocus={() => (hasMega ? openMenu(idx) : clearCloseTimer())}
+                  className="relative"
+                >
+                  <Link
+                    href={item.href}
+                    aria-haspopup={hasMega ? 'menu' : undefined}
+                    aria-expanded={hasMega ? isOpen : undefined}
+                    aria-controls={hasMega ? menuId : undefined}
+                    className={cn(
+                      'ui-caps text-ivoire/85 inline-flex items-center gap-1.5 transition-colors',
+                      'hover:text-or focus-visible:text-or',
+                      'relative after:absolute after:right-0 after:-bottom-1.5 after:left-0',
+                      'after:bg-or after:h-px after:origin-center after:scale-x-0',
+                      'after:transition-transform after:duration-300',
+                      'hover:after:scale-x-100 focus-visible:after:scale-x-100',
+                      isOpen && 'text-or after:scale-x-100',
+                    )}
+                  >
+                    {item.label}
+                    {hasMega ? (
+                      <ChevronDown
+                        className={cn(
+                          'size-3 transition-transform duration-200',
+                          isOpen && 'rotate-180',
+                        )}
+                        aria-hidden="true"
+                        strokeWidth={1.5}
+                      />
+                    ) : null}
+                  </Link>
+                </div>
+              );
+            })}
           </nav>
         </div>
 
@@ -163,6 +235,30 @@ export function Header({ cartCount = 0 }: HeaderProps) {
       </Container>
 
       <MobileNav open={mobileOpen} onOpenChange={setMobileOpen} cartCount={cartCount} />
+
+      {/* MegaMenu (desktop uniquement) — un seul composant mount, config swap */}
+      {activeMenu ? (
+        <MegaMenu
+          config={activeMenu}
+          open
+          id={`megamenu-${openMenuIdx}`}
+          onClose={() => setOpenMenuIdx(null)}
+          onMouseEnter={clearCloseTimer}
+          onMouseLeave={scheduleClose}
+        />
+      ) : null}
+
+      {/* Backdrop lorsque le MegaMenu est ouvert — click-outside ferme */}
+      <div
+        aria-hidden="true"
+        onClick={() => setOpenMenuIdx(null)}
+        className={cn(
+          'bg-noir/30 fixed inset-0 z-20 transition-opacity duration-200',
+          'supports-backdrop-filter:backdrop-blur-[1px]',
+          openMenuIdx !== null ? 'opacity-100' : 'pointer-events-none opacity-0',
+          'hidden lg:block',
+        )}
+      />
     </header>
   );
 }
