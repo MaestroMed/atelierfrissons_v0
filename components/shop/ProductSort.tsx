@@ -3,16 +3,12 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTransition } from 'react';
 import { cn } from '@/lib/utils';
+import { SORT_OPTIONS, type SortKey } from '@/lib/shop/sort';
 
-const SORT_OPTIONS = [
-  { value: 'featured', label: 'Sélection signature' },
-  { value: 'newest', label: 'Nouveautés' },
-  { value: 'price-asc', label: 'Prix croissant' },
-  { value: 'price-desc', label: 'Prix décroissant' },
-  { value: 'name-asc', label: 'Nom A → Z' },
-] as const;
-
-export type SortKey = (typeof SORT_OPTIONS)[number]['value'];
+// NOTE : `applyProductSort` + `SortKey` sont importés depuis `@/lib/shop/sort`
+// (module neutre). Ce fichier est 'use client' — exporter la logique pure
+// d'ici ferait crasher tout Server Component qui l'importerait
+// (« Attempted to call applyProductSort() from the server »).
 
 interface ProductSortProps {
   className?: string;
@@ -59,23 +55,4 @@ export function ProductSort({ className }: ProductSortProps) {
       </select>
     </label>
   );
-}
-
-export function applyProductSort<
-  T extends { isFeatured: boolean; publishedAt: Date | null; priceCents: number; name: string },
->(products: readonly T[], sort: SortKey | null = 'featured'): T[] {
-  const arr = [...products];
-  switch (sort) {
-    case 'newest':
-      return arr.sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0));
-    case 'price-asc':
-      return arr.sort((a, b) => a.priceCents - b.priceCents);
-    case 'price-desc':
-      return arr.sort((a, b) => b.priceCents - a.priceCents);
-    case 'name-asc':
-      return arr.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-    case 'featured':
-    default:
-      return arr.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
-  }
 }

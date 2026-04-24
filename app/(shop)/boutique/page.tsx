@@ -4,7 +4,8 @@ import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
 import { ProductGrid } from '@/components/shop/ProductGrid';
 import { ProductFilters } from '@/components/shop/ProductFilters';
-import { ProductSort, applyProductSort, type SortKey } from '@/components/shop/ProductSort';
+import { ProductSort } from '@/components/shop/ProductSort';
+import { applyProductSort, type SortKey } from '@/lib/shop/sort';
 import { getMockCategories, getMockProducts } from '@/lib/mock/products';
 import type { Product } from '@/lib/db/schema';
 
