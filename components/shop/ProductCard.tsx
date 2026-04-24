@@ -6,6 +6,7 @@ import { PriceTag } from './PriceTag';
 import { StockBadge } from './StockBadge';
 import { WishlistButton } from './WishlistButton';
 import { QuickViewButton } from './QuickViewButton';
+import { CompareToggleButton } from './CompareToggleButton';
 import { getMockReviewsForProduct, summarizeReviews } from '@/lib/mock/reviews';
 
 interface ProductCardProps {
@@ -104,6 +105,14 @@ export function ProductCard({
           productName={product.name}
           variant="overlay"
           className="absolute top-3 right-3 z-10"
+        />
+
+        {/* Bouton comparer — overlay top-right, sous le favoris (desktop only) */}
+        <CompareToggleButton
+          slug={product.slug}
+          productName={product.name}
+          variant="overlay"
+          className="absolute top-3 right-[60px] z-10 hidden md:inline-flex"
         />
 
         {/* Bouton aperçu rapide — apparait au hover (bottom center) */}

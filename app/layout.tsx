@@ -13,6 +13,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { JsonLd } from '@/components/shared/JsonLd';
 import { BackToTop } from '@/components/shared/BackToTop';
 import { CommandPalette } from '@/components/shared/CommandPalette';
+import { CompareBar } from '@/components/shop/CompareBar';
 import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo/structured-data';
 import './globals.css';
 
@@ -167,6 +168,7 @@ export default async function RootLayout({
         </main>
         <Footer />
         <CartDrawer initialSnapshot={cartSnapshot} upsellCandidates={upsellCandidates} />
+        <CompareBar />
         <BackToTop />
         <CommandPalette />
         <Toaster position="bottom-center" />
