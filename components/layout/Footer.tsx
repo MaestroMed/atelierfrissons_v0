@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { MapPin, Mail } from 'lucide-react';
 import { Container } from './Container';
 import { Fleuron } from './Fleuron';
 import { Wordmark } from './Wordmark';
@@ -21,10 +22,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer
-      className="relative isolate bg-noir text-ivoire"
-      aria-labelledby="footer-heading"
-    >
+    <footer className="bg-noir text-ivoire relative isolate" aria-labelledby="footer-heading">
       <h2 id="footer-heading" className="sr-only">
         Pied de page Atelier Frisson
       </h2>
@@ -34,11 +32,11 @@ export function Footer() {
         <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[3fr_2fr] lg:items-end lg:gap-16">
           <div className="flex flex-col gap-5">
             <p className="ui-caps text-or">Le Journal</p>
-            <h3 className="font-display text-4xl font-medium text-ivoire md:text-5xl">
+            <h3 className="font-display text-ivoire text-4xl font-medium md:text-5xl">
               Recevez nos rituels{' '}
               <span className="font-italic-editorial text-or">en avant-première</span>
             </h3>
-            <p className="max-w-lg text-base text-ivoire/70">
+            <p className="text-ivoire/70 max-w-lg text-base">
               Une lettre éditoriale — un rituel, une rencontre, un guide. Jamais plus de deux fois
               par mois. Jamais de promotion forcée.
             </p>
@@ -61,7 +59,7 @@ export function Footer() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      className="text-sm text-ivoire/75 transition-colors hover:text-or"
+                      className="text-ivoire/75 hover:text-or text-sm transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -86,10 +84,25 @@ export function Footer() {
             layout="inline"
             className="text-center tracking-[0.1em]"
           />
-          <p className="font-italic-editorial text-ivoire/65">
-            Maison du rituel intime — Paris
-          </p>
-          <Fleuron variant="divider" size="lg" color="or" className="opacity-50" />
+          <p className="font-italic-editorial text-ivoire/65">Maison du rituel intime — Paris</p>
+
+          {/* Coordonnées atelier */}
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-xs">
+            <span className="ui-caps text-ivoire/55 inline-flex items-center gap-2">
+              <MapPin className="text-or/70 size-3" aria-hidden="true" strokeWidth={1.5} />
+              Atelier Paris 12<sup className="text-[8px]">e</sup>
+              <span className="text-ivoire/35"> · sur RDV</span>
+            </span>
+            <a
+              href="mailto:contact@atelierfrisson.fr"
+              className="ui-caps text-ivoire/55 hover:text-or inline-flex items-center gap-2 transition-colors"
+            >
+              <Mail className="text-or/70 size-3" aria-hidden="true" strokeWidth={1.5} />
+              contact@atelierfrisson.fr
+            </a>
+          </div>
+
+          <Fleuron variant="divider" size="lg" color="or" className="mt-4 opacity-50" />
 
           {/* Social + réservation majeurs */}
           <div className="mt-6 flex flex-col items-center gap-5 md:flex-row md:gap-10">
@@ -101,7 +114,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="text-ivoire/60 transition-colors hover:text-or"
+                  className="text-ivoire/60 hover:text-or transition-colors"
                 >
                   {s.icon === 'instagram' ? (
                     <InstagramIcon className="size-4" />
@@ -111,11 +124,8 @@ export function Footer() {
                 </a>
               ))}
             </div>
-            <p className="ui-caps inline-flex items-center gap-2 rounded-sm border border-ivoire/20 px-3 py-1.5 text-ivoire/60">
-              <span
-                aria-hidden="true"
-                className="inline-block size-1.5 rounded-full bg-or"
-              />
+            <p className="ui-caps border-ivoire/20 text-ivoire/60 inline-flex items-center gap-2 rounded-sm border px-3 py-1.5">
+              <span aria-hidden="true" className="bg-or inline-block size-1.5 rounded-full" />
               Site réservé aux personnes majeures
             </p>
           </div>
@@ -123,10 +133,10 @@ export function Footer() {
       </Container>
 
       {/* ── Baseline légale ───────────────────────────────────────── */}
-      <div className="border-t border-ivoire/10">
+      <div className="border-ivoire/10 border-t">
         <Container
           as="div"
-          className="flex flex-col gap-4 py-6 text-xs text-ivoire/50 lg:flex-row lg:items-center lg:justify-between"
+          className="text-ivoire/50 flex flex-col gap-4 py-6 text-xs lg:flex-row lg:items-center lg:justify-between"
         >
           <p>
             © {year} Atelier Frisson —{' '}
@@ -142,12 +152,9 @@ export function Footer() {
             <li>TVA intra — à venir</li>
             <li>Hébergement : Vercel Inc. — CDN Cloudflare</li>
           </ul>
-          <p className="font-italic-editorial text-ivoire/60">
-            Conception éditoriale — Paris
-          </p>
+          <p className="font-italic-editorial text-ivoire/60">Conception éditoriale — Paris</p>
         </Container>
       </div>
     </footer>
   );
 }
-
