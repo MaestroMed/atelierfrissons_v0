@@ -14,6 +14,7 @@ import { RecentlyViewedTracker } from '@/components/shop/RecentlyViewedTracker';
 import { RecentlyViewedSection } from '@/components/shop/RecentlyViewedSection';
 import { ReviewsSection } from '@/components/shop/ReviewsSection';
 import { ReviewStars } from '@/components/shop/ReviewStars';
+import { ProductCinematicHero } from '@/components/shop/ProductCinematicHero';
 import { ArticleShareRow } from '@/components/articles/ArticleShareRow';
 import { SpecsTable } from '@/components/shop/SpecsTable';
 import { FAQAccordion, type FAQItem } from '@/components/shop/FAQAccordion';
@@ -116,7 +117,27 @@ export default async function ProductPage({ params }: PageProps) {
       />
       <JsonLd data={buildFAQSchema(PRODUCT_FAQ)} />
 
-      <Container className="py-8 md:py-12">
+      {/* ─── HERO CINÉMATIQUE (full-bleed, tone selon collection) ─── */}
+      <ProductCinematicHero
+        collection={product.collection}
+        caption={`${collectionLabel(product.collection)}${product.isFeatured ? ' · Pièce signature' : ''}`}
+        name={product.name}
+        tagline={product.tagline}
+        ambientWord={
+          product.collection === 'jour'
+            ? 'JOUR'
+            : product.collection === 'nuit'
+              ? 'NUIT'
+              : undefined
+        }
+        rating={
+          reviewSummary
+            ? { average: reviewSummary.averageRating, count: reviewSummary.count }
+            : undefined
+        }
+      />
+
+      <Container className="py-8 md:py-12" id="buy-section">
         <BreadcrumbNav items={breadcrumb} className="mb-10 md:mb-12" />
 
         {/* Layout 2 colonnes : galerie + infos */}
@@ -128,15 +149,16 @@ export default async function ProductPage({ params }: PageProps) {
             productSlug={product.slug}
           />
 
-          {/* Info panel sticky desktop */}
+          {/* Info panel sticky desktop — h1 a déjà été affiché dans le hero,
+              donc ici on utilise un h2 + label sans dupliquer le nom en titre */}
           <div className="flex flex-col gap-6 lg:sticky lg:top-32 lg:h-fit">
             <div className="flex flex-col gap-3">
-              <p className="ui-caps text-or-dark">{collectionLabel(product.collection)}</p>
-              <h1 className="font-display text-noir text-3xl font-medium md:text-4xl lg:text-5xl">
+              <p className="ui-caps text-or-dark">Composition de votre commande</p>
+              <h2 className="font-display text-noir text-2xl font-medium md:text-3xl">
                 {product.name}
-              </h1>
+              </h2>
               {product.tagline ? (
-                <p className="font-italic-editorial text-or-dark text-lg md:text-xl">
+                <p className="font-italic-editorial text-or-dark text-base md:text-lg">
                   {product.tagline}
                 </p>
               ) : null}
