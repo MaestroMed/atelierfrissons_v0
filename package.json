@@ -21,6 +21,7 @@
     "test:e2e": "echo 'TODO: configure playwright' && exit 0",
     "forge:import": "tsx scripts/forge-import.ts",
     "forge:validate": "tsx scripts/forge-validate.ts",
+    "audit:security": "tsx scripts/audit-security-headers.ts",
     "analyze": "ANALYZE=true next build",
     "prepare": "husky"
   },

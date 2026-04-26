@@ -93,8 +93,40 @@ export async function proxy(request: NextRequest) {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set(
     'Permissions-Policy',
-    'camera=(), microphone=(), geolocation=(), interest-cohort=(), browsing-topics=()',
+    [
+      'camera=()',
+      'microphone=()',
+      'geolocation=()',
+      'interest-cohort=()',
+      'browsing-topics=()',
+      'payment=(self)',
+      'usb=()',
+      'gyroscope=()',
+      'magnetometer=()',
+      'accelerometer=()',
+    ].join(', '),
   );
+
+  // HSTS — uniquement en production (Vercel sert via HTTPS).
+  // 2 ans + includeSubDomains + preload pour soumission à hstspreload.org.
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=63072000; includeSubDomains; preload',
+    );
+  }
+
+  // Cross-Origin policies — durcissement supplémentaire.
+  // COOP : isole notre browsing context des fenêtres ouvertes par d'autres origins.
+  // CORP : restreint qui peut charger nos ressources cross-origin.
+  // (COEP non activé : casserait les iframes Mux/CCBill — à activer Sprint 8
+  //  une fois les iframes payment confirmées en same-origin ou avec credentialless).
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-site');
+
+  // Anti-clickjacking renforcé (CSP frame-ancestors fait déjà le boulot,
+  // mais double-couche pour les vieux navigateurs ne supportant pas la CSP).
+  // X-Frame-Options DENY déjà set ci-dessus.
 
   return response;
 }
