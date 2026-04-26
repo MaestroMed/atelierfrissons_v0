@@ -281,3 +281,125 @@ _Sprint 1-7 livrés. Sprint 8 : seed Supabase + connexions services réelles, ra
 - Animations subtiles, non intrusives, respect a11y motion
 
 _Prochaine cadence possible_ : E2E Playwright (checkout, age gate, palette), axe-core audit, Lighthouse CI, stripe session creation effective, CCBill FlexForms.
+
+---
+
+## Session 3 — 2026-04-25 — Production-ready batch (P7 → P20 + L1 → L10)
+
+**Mode** : carte blanche, mode multi-agent swarm, 3 passes de polish.
+**Durée** : 33 commits incrémentaux post-MVP, focus sur la cohérence
+narrative cinématique + le branchement backend production-ready.
+
+### Phase A — UX engagement (P7 → P14)
+
+- **P7 Wishlist end-to-end** (commit `c06035c`) : cookie 90j, WishlistButton
+  3 variants, /compte/favoris, ArticleToc + ShareRow, 404 destinations
+- **P8 Recently Viewed + empty states** (commit `2fbe781`) : localStorage
+  TTL 60j, RecentlyViewedSection sur produit + compte + cart vide,
+  /recherche empty + no-match enrichis
+- **P9 Reviews + gift options** (commit `9ce4da3`) : 20 avis vérifiés +
+  ReviewStars + ReviewsSection + Schema.org AggregateRating, gift toggle
+  checkout révélable
+- **P10 QuickView + share + admin polish** (commit `f14f1cf`) : modal
+  dialog produit, ArticleShareRow réutilisable, Sparkline SVG natif +
+  ActivityFeed admin
+- **P11 Gallery lightbox + promo** (commit `9af6490`) : lightbox plein
+  écran + clavier nav, codes promo (WELCOME10/DUO15/GIFT500) avec
+  re-validation server
+- **P12 Newsletter DOI + cart upsell** (commit `9fd913f`) : tokens HMAC
+  stateless 48h, /auth/confirm-subscribe Server Component, NewsletterForm
+  tone prop, mini-upsells panier <3 items
+- **P13 Compare end-to-end** (commit `e577ced`) : 3 max localStorage,
+  CompareToggleButton + CompareBar floating + /comparer table partageable
+- **P14 Admin CRUD produit** (commit `f1c7a92`) : RHF + zod + TipTap rich
+  text + Server Action stub DB
+
+### Phase B — DA cinématique cohérente (P15 → P20)
+
+- **P15 MegaMenu Dior + AnnouncementBar dismissable** (commit `bb9b958`)
+- **P16 /rituel-inaugural** (commit `8725043`) : expérience scrollytelling
+  6 chapitres + hero/épilogue cinématiques, palette qui bascule au scroll,
+  typo qui se déploie
+- **P17 /a-propos refonte cinématique** (commit `4187df6`) : 8 sections
+  narratives (hero + manifeste + portrait fondatrice + timeline 5 jalons
+  - 6 engagements + équipe anonymisée + presse + atelier + épilogue),
+    Timeline + TeamGrid + PressQuotes components
+- **P18 /collections refonte** (commit `9dc5753`) : split JOUR/NUIT
+  full-bleed avec mots d'ambiance MATINS/NUITS en filigrane énorme,
+  CollectionImmersiveHero + CollectionRitualSteps
+- **P19 AgeGate cinématique + Footer atelier** (commit `1f122ac`) :
+  séquence step 0→3 sur 1.4s avec wipe shine sur CTA primary
+- **P20 Page produit cinématique** (commit `16b2214`) : ProductCinematicHero
+  full-bleed avec ambient word + scroll cue ancré buy-section
+
+### Phase C — Production-ready backend (L1 → L10)
+
+- **L1 Drizzle UPDATE produit + audit log** (commit `73580c9`)
+  - `lib/audit/log.ts` — logAuditEvent() centralisé, mode graceful sans DB
+  - `lib/db/queries/admin-products.ts` — UPDATE + archive avec returning
+  - `lib/admin/products/actions.ts` — branchement Drizzle réel +
+    snapshot before/after dans audit log + headers IP/UA capture
+- **L2 2FA TOTP RFC 6238 natif** (commit `484adb5`)
+  - `lib/auth/totp.ts` — Web Crypto API HMAC-SHA1 + dynamic truncation
+    - base32 encode/decode + recovery codes
+  - `lib/auth/totp-actions.ts` — start/finish/verify Server Actions
+  - `components/admin/TotpEnrolWizard.tsx` — wizard 4 étapes
+  - `/admin/securite-2fa` page
+- **L3 PDF facture HTML + CSV exports** (commit `785e65c`)
+  - `lib/exports/csv.ts` — RFC 4180 sans dépendance
+  - `lib/invoices/generate-invoice-html.ts` — HTML imprimable
+    (conformité L441-9/10), Bodoni titres, palette Atelier Frisson
+  - `/api/admin/invoices/[orderNumber]` + `/api/admin/exports/products`
+- **L4 Cookie banner CNIL** déjà en place — granulaire, équiproéminent,
+  versionné `af_consent_v1`, event dispatch `af:consent`
+- **L5 Glossaire interactif** (même commit) — search live + filter
+  catégories + highlight matches + empty state
+- **L6 Loading skeletons + 404** (même commit) — Skeleton primitive
+  shimmer, ProductGridSkeleton, AccountDashboardSkeleton, loading.tsx
+  pour /boutique /compte /admin. 404 déjà polishée P7
+- **L7 Mux + Supabase Storage** (commit `726bcfb`)
+  - `lib/mux/upload.ts` — createMuxDirectUpload + getStatus + getPlaybackId
+  - `lib/storage/images.ts` — generateProductImageUploadUrl avec
+    validation MIME + path safe
+- **L8 Playwright** — non implémenté cette session (Sprint 8 dédié)
+- **L9 Headers sécu + audit script** (même commit `726bcfb`)
+  - proxy.ts enrichi : Permissions-Policy étendu, HSTS prod 2 ans,
+    COOP same-origin, CORP same-site
+  - `scripts/audit-security-headers.ts` — 8 checks RFC, exit code 1
+    si fail (CI/CD ready)
+  - `pnpm audit:security [URL]` script ajouté
+- **L10 Documentation** — GO_LIVE_CHECKLIST exhaustive (10 sections,
+  ~60 cases à cocher) + cette mise à jour SESSION_HISTORY
+
+### Cumul Session 3
+
+- **33 commits** post-MVP (P7 → L10)
+- **70+ routes** dans le build
+- **30+ nouveaux composants** réutilisables
+- **15+ nouvelles pages** admin / shop / éditoriales
+- **Cohérence narrative cinématique** complète : AgeGate → Homepage →
+  MegaMenu → /collections → /a-propos → /rituel-inaugural → /produit
+- **Backend production-ready** : audit log instrumenté, 2FA TOTP,
+  PDF facture, CSV exports, headers durcis, audit script, helpers Mux +
+  Supabase Storage prêts à brancher
+
+### Reste à faire avant go-live (cf. GO_LIVE_CHECKLIST.md)
+
+1. K-Bis SASU + Qonto + CCBill onboarding (côté Odelie, 2-5 sem)
+2. Configuration env vars Vercel (Supabase, Resend, Klaviyo, Mux, etc.)
+3. `pnpm db:push` + migration RLS + `pnpm db:seed`
+4. Photos produits réelles uploadées via /admin/produits
+5. Tests E2E Playwright (4 parcours critiques)
+6. Lighthouse staging ≥ 95 + Mozilla Observatory A+ + SSL Labs A+
+7. Première commande test bout-en-bout
+8. 2FA admin enrôlée + recovery codes archivés
+
+**Le site est prêt à montrer à la presse demain matin** (silhouettes SVG +
+copy éditoriale finale). **Le go-live commercial nécessite ~3 semaines**
+de finitions backend une fois les blocages juridiques levés.
+
+---
+
+_Sessions 1-3 livrées. Prochaine cadence : tests E2E Playwright complets,
+axe-core a11y audit, Lighthouse CI, branchement effectif CCBill FlexForms,
+sync CJ catalogue réel._
