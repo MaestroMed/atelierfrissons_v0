@@ -200,10 +200,7 @@ export const productVariants = pgTable(
     priceCents: integer('price_cents'),
     stockQuantity: integer('stock_quantity').default(0).notNull(),
     supplierSku: text('supplier_sku'),
-    images: jsonb('images')
-      .$type<Array<{ url: string; alt: string }>>()
-      .default([])
-      .notNull(),
+    images: jsonb('images').$type<Array<{ url: string; alt: string }>>().default([]).notNull(),
     attributes: jsonb('attributes').$type<Record<string, string>>(),
     displayOrder: integer('display_order').default(0).notNull(),
     isActive: boolean('is_active').default(true).notNull(),
@@ -391,10 +388,7 @@ export const reviews = pgTable(
     moderatedAt: timestamp('moderated_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [
-    index('reviews_product_idx').on(t.productId),
-    index('reviews_status_idx').on(t.status),
-  ],
+  (t) => [index('reviews_product_idx').on(t.productId), index('reviews_status_idx').on(t.status)],
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -408,7 +402,9 @@ export const articles = pgTable(
     title: text('title').notNull(),
     excerpt: text('excerpt'),
     content: text('content').notNull(),
-    contentType: text('content_type', { enum: ['mdx', 'html'] }).default('mdx').notNull(),
+    contentType: text('content_type', { enum: ['mdx', 'html'] })
+      .default('mdx')
+      .notNull(),
     category: text('category'),
     tags: jsonb('tags').$type<string[]>().default([]).notNull(),
     author: text('author'),
@@ -621,6 +617,370 @@ export const newsletterSubscribers = pgTable(
 );
 
 // ═════════════════════════════════════════════════════════════════════════════
+// PIVOT V2 — DROPSHIP COUPLES 30-50 ANS
+// Ces 9 tables ajoutent : abonnement box mensuelle, bundles, parrainage,
+// fidélité, cartes cadeaux. Voir docs/ETAT_DES_LIEUX.md §3.
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTION PLANS — box mensuelle (Découverte 39€ / Premium 49€ / Trio 59€)
+// ─────────────────────────────────────────────────────────────────────────────
+export const subscriptionPlans = pgTable(
+  'subscription_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    tagline: text('tagline'),
+    description: text('description'),
+    /** Prix mensuel en cents (3900 = 39 €). */
+    priceCents: integer('price_cents').notNull(),
+    /** Nombre d'articles inclus dans la box. */
+    itemsPerBox: integer('items_per_box').default(3).notNull(),
+    /** Engagement minimum en mois (0 = sans engagement). */
+    minCommitmentMonths: integer('min_commitment_months').default(0).notNull(),
+    /** Pourcentage de réduction sur le prix annuel (paiement annuel). */
+    annualDiscountPercent: integer('annual_discount_percent').default(0).notNull(),
+    heroImageUrl: text('hero_image_url'),
+    isActive: boolean('is_active').default(true).notNull(),
+    displayOrder: integer('display_order').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('subscription_plans_slug_idx').on(t.slug),
+    index('subscription_plans_active_idx').on(t.isActive),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTIONS — instances actives client × plan, billing CCBill recurring
+// ─────────────────────────────────────────────────────────────────────────────
+export const subscriptions = pgTable(
+  'subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    customerId: uuid('customer_id')
+      .references(() => customers.id, { onDelete: 'cascade' })
+      .notNull(),
+    planId: uuid('plan_id')
+      .references(() => subscriptionPlans.id)
+      .notNull(),
+    status: text('status', {
+      enum: ['active', 'paused', 'past_due', 'cancelled', 'expired'],
+    })
+      .default('active')
+      .notNull(),
+    /** Cycle de facturation : mensuel ou annuel. */
+    billingCycle: text('billing_cycle', { enum: ['monthly', 'annual'] })
+      .default('monthly')
+      .notNull(),
+    /** ID interne du PSP recurring (CCBill subscription_id ou Verotel). */
+    pspProvider: text('psp_provider', { enum: ['ccbill', 'verotel', 'stripe'] }).notNull(),
+    pspSubscriptionId: text('psp_subscription_id'),
+    /** Date du prochain prélèvement. */
+    nextChargeAt: timestamp('next_charge_at', { withTimezone: true }),
+    /** Skip : permet à la cliente de sauter 1 mois sans annuler. */
+    skipNextShipment: boolean('skip_next_shipment').default(false).notNull(),
+    /** Adresse livraison snapshot (peut différer de l'adresse par défaut). */
+    shippingAddress: jsonb('shipping_address'),
+    /** Préférences contenu (allergies, exclusions, niveau d'expérience). */
+    preferences: jsonb('preferences').$type<{
+      excludeCategories?: string[];
+      experienceLevel?: 'debutant' | 'intermediaire' | 'avance';
+      preferredVibe?: 'doux' | 'audacieux' | 'classique';
+      notes?: string;
+    }>(),
+    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+    pausedAt: timestamp('paused_at', { withTimezone: true }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    cancellationReason: text('cancellation_reason'),
+    /** Montant cumulé facturé sur cette souscription en cents. */
+    lifetimeValueCents: integer('lifetime_value_cents').default(0).notNull(),
+    shipmentsCount: integer('shipments_count').default(0).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('subscriptions_customer_idx').on(t.customerId),
+    index('subscriptions_status_idx').on(t.status),
+    index('subscriptions_next_charge_idx').on(t.nextChargeAt),
+    uniqueIndex('subscriptions_psp_id_idx').on(t.pspSubscriptionId),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTION SHIPMENTS — un envoi mensuel par souscription active
+// ─────────────────────────────────────────────────────────────────────────────
+export const subscriptionShipments = pgTable(
+  'subscription_shipments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    subscriptionId: uuid('subscription_id')
+      .references(() => subscriptions.id, { onDelete: 'cascade' })
+      .notNull(),
+    /** Numéro de box (1 = première box, incrémental). */
+    boxNumber: integer('box_number').notNull(),
+    /** Mois logique de la box au format YYYY-MM. */
+    period: text('period').notNull(),
+    status: text('status', {
+      enum: ['pending', 'preparing', 'shipped', 'delivered', 'returned'],
+    })
+      .default('pending')
+      .notNull(),
+    /** Snapshot des produits inclus (id + nom + image + quantité). */
+    items: jsonb('items')
+      .$type<
+        Array<{
+          productId: string;
+          productName: string;
+          productSlug: string;
+          imageUrl: string | null;
+          quantity: number;
+          unitPriceCents: number;
+        }>
+      >()
+      .default([])
+      .notNull(),
+    /** Coût d'achat fournisseur (pour calcul marge). */
+    cogsCents: integer('cogs_cents').default(0).notNull(),
+    /** Prix payé par la cliente (snapshot). */
+    revenueCents: integer('revenue_cents').notNull(),
+    trackingNumber: text('tracking_number'),
+    trackingUrl: text('tracking_url'),
+    carrier: text('carrier'),
+    chargedAt: timestamp('charged_at', { withTimezone: true }),
+    shippedAt: timestamp('shipped_at', { withTimezone: true }),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('shipments_subscription_idx').on(t.subscriptionId),
+    index('shipments_status_idx').on(t.status),
+    uniqueIndex('shipments_sub_box_idx').on(t.subscriptionId, t.boxNumber),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUNDLES — combos pré-fabriqués 79-149 € (Soirée à deux, Évasion week-end…)
+// ─────────────────────────────────────────────────────────────────────────────
+export const bundles = pgTable(
+  'bundles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    tagline: text('tagline'),
+    descriptionShort: text('description_short').notNull(),
+    descriptionLong: text('description_long'),
+    /** Prix bundle en cents (avantage vs somme des articles unitaires). */
+    priceCents: integer('price_cents').notNull(),
+    /** Prix barré (somme normale des produits) pour affichage économie. */
+    compareAtPriceCents: integer('compare_at_price_cents'),
+    heroImageUrl: text('hero_image_url'),
+    images: jsonb('images')
+      .$type<Array<{ url: string; alt: string; width: number; height: number }>>()
+      .default([])
+      .notNull(),
+    /** Niveau d'occasion : Saint-Valentin, anniversaire, EVJF… */
+    occasion: text('occasion', {
+      enum: ['saint_valentin', 'anniversaire', 'evjf', 'evg', 'noel', 'mariage', 'pas_d_occasion'],
+    })
+      .default('pas_d_occasion')
+      .notNull(),
+    /** Disponibilité saisonnière (NULL = toute l'année). */
+    availableFrom: timestamp('available_from', { withTimezone: true }),
+    availableUntil: timestamp('available_until', { withTimezone: true }),
+    seoTitle: text('seo_title'),
+    seoDescription: text('seo_description'),
+    schemaOrgData: jsonb('schema_org_data'),
+    status: text('status', { enum: ['draft', 'active', 'archived'] })
+      .default('draft')
+      .notNull(),
+    isFeatured: boolean('is_featured').default(false).notNull(),
+    displayOrder: integer('display_order').default(0).notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('bundles_slug_idx').on(t.slug),
+    index('bundles_status_idx').on(t.status),
+    index('bundles_occasion_idx').on(t.occasion),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUNDLE ITEMS — composition d'un bundle (one-to-many)
+// ─────────────────────────────────────────────────────────────────────────────
+export const bundleItems = pgTable(
+  'bundle_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    bundleId: uuid('bundle_id')
+      .references(() => bundles.id, { onDelete: 'cascade' })
+      .notNull(),
+    productId: uuid('product_id')
+      .references(() => products.id)
+      .notNull(),
+    variantId: uuid('variant_id').references(() => productVariants.id),
+    quantity: integer('quantity').default(1).notNull(),
+    /** Si vrai, le bundle ne peut pas être ajouté au panier sans cet item. */
+    isRequired: boolean('is_required').default(true).notNull(),
+    displayOrder: integer('display_order').default(0).notNull(),
+  },
+  (t) => [
+    index('bundle_items_bundle_idx').on(t.bundleId),
+    index('bundle_items_product_idx').on(t.productId),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GIFT CARDS — codes uniques avec solde, expirent 12 mois
+// ─────────────────────────────────────────────────────────────────────────────
+export const giftCards = pgTable(
+  'gift_cards',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Code humain-lisible XXXX-XXXX-XXXX-XXXX (cf. lib/auth/totp.ts). */
+    code: text('code').notNull().unique(),
+    /** Hash du code pour validation constant-time côté serveur. */
+    codeHash: text('code_hash').notNull(),
+    /** Montant initial en cents. */
+    initialBalanceCents: integer('initial_balance_cents').notNull(),
+    /** Solde restant en cents (peut être 0 quand totalement consommée). */
+    remainingBalanceCents: integer('remaining_balance_cents').notNull(),
+    currency: varchar('currency', { length: 3 }).default('EUR').notNull(),
+    /** Achetée par (NULL = générée admin/promo). */
+    purchaserCustomerId: uuid('purchaser_customer_id').references(() => customers.id),
+    purchaserOrderId: uuid('purchaser_order_id').references(() => orders.id),
+    /** Destinataire si donnée en cadeau (email + message personnalisé). */
+    recipientEmail: text('recipient_email'),
+    recipientName: text('recipient_name'),
+    giftMessage: text('gift_message'),
+    /** Date d'envoi prévue (ex: Saint-Valentin J-J). */
+    scheduledSendAt: timestamp('scheduled_send_at', { withTimezone: true }),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    status: text('status', { enum: ['pending', 'active', 'consumed', 'expired', 'cancelled'] })
+      .default('pending')
+      .notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('gift_cards_code_idx').on(t.code),
+    uniqueIndex('gift_cards_code_hash_idx').on(t.codeHash),
+    index('gift_cards_status_idx').on(t.status),
+    index('gift_cards_recipient_email_idx').on(t.recipientEmail),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GIFT CARD TRANSACTIONS — utilisation partielle/totale lors d'une commande
+// ─────────────────────────────────────────────────────────────────────────────
+export const giftCardTransactions = pgTable(
+  'gift_card_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    giftCardId: uuid('gift_card_id')
+      .references(() => giftCards.id, { onDelete: 'cascade' })
+      .notNull(),
+    orderId: uuid('order_id').references(() => orders.id),
+    /** Montant débité (ou crédité si remboursement). */
+    amountCents: integer('amount_cents').notNull(),
+    /** Solde après l'opération. */
+    balanceAfterCents: integer('balance_after_cents').notNull(),
+    type: text('type', { enum: ['redeem', 'refund', 'topup', 'issue', 'expire'] }).notNull(),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('gift_card_tx_card_idx').on(t.giftCardId),
+    index('gift_card_tx_order_idx').on(t.orderId),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOYALTY POINTS TRANSACTIONS — programme fidélité (1 € = 1 point)
+// ─────────────────────────────────────────────────────────────────────────────
+export const loyaltyPointsTransactions = pgTable(
+  'loyalty_points_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    customerId: uuid('customer_id')
+      .references(() => customers.id, { onDelete: 'cascade' })
+      .notNull(),
+    /** Points gagnés (positif) ou dépensés (négatif). */
+    points: integer('points').notNull(),
+    /** Source : achat, parrainage, anniversaire, expiration… */
+    reason: text('reason', {
+      enum: [
+        'order_earned',
+        'order_redeemed',
+        'referral_bonus',
+        'birthday_bonus',
+        'review_bonus',
+        'admin_adjustment',
+        'expiration',
+      ],
+    }).notNull(),
+    orderId: uuid('order_id').references(() => orders.id),
+    /** Solde cumulé après l'opération (sum running). */
+    balanceAfter: integer('balance_after').notNull(),
+    /** Date d'expiration de ces points (12 mois standard). */
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('loyalty_tx_customer_idx').on(t.customerId),
+    index('loyalty_tx_reason_idx').on(t.reason),
+    index('loyalty_tx_expires_idx').on(t.expiresAt),
+  ],
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REFERRALS — programme parrainage 20 € offert / 20 € gagné
+// ─────────────────────────────────────────────────────────────────────────────
+export const referrals = pgTable(
+  'referrals',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Le parrain. */
+    referrerId: uuid('referrer_id')
+      .references(() => customers.id, { onDelete: 'cascade' })
+      .notNull(),
+    /** Le filleul (NULL tant qu'il ne s'est pas inscrit). */
+    refereeId: uuid('referee_id').references(() => customers.id),
+    /** Code unique du parrain (ex: ODELIE-AB12CD). */
+    code: text('code').notNull().unique(),
+    /** Email du filleul saisi avant inscription (capture intent). */
+    refereeEmail: text('referee_email'),
+    /** Statut du parrainage. */
+    status: text('status', {
+      enum: ['pending', 'signed_up', 'first_purchase', 'rewarded', 'expired'],
+    })
+      .default('pending')
+      .notNull(),
+    /** Montant en cents offert au parrain (gagné après 1ère commande filleul). */
+    referrerRewardCents: integer('referrer_reward_cents').default(2000).notNull(),
+    /** Montant en cents offert au filleul (utilisable dès inscription). */
+    refereeRewardCents: integer('referee_reward_cents').default(2000).notNull(),
+    /** Première commande qui a déclenché la récompense. */
+    triggeringOrderId: uuid('triggering_order_id').references(() => orders.id),
+    signedUpAt: timestamp('signed_up_at', { withTimezone: true }),
+    rewardedAt: timestamp('rewarded_at', { withTimezone: true }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('referrals_code_idx').on(t.code),
+    index('referrals_referrer_idx').on(t.referrerId),
+    index('referrals_referee_idx').on(t.refereeId),
+    index('referrals_status_idx').on(t.status),
+  ],
+);
+
+// ═════════════════════════════════════════════════════════════════════════════
 // RELATIONS
 // ═════════════════════════════════════════════════════════════════════════════
 
@@ -630,6 +990,9 @@ export const customersRelations = relations(customers, ({ many }) => ({
   carts: many(carts),
   reviews: many(reviews),
   marketingEvents: many(marketingEvents),
+  subscriptions: many(subscriptions),
+  loyaltyPointsTransactions: many(loyaltyPointsTransactions),
+  referralsAsReferrer: many(referrals, { relationName: 'referrer' }),
 }));
 
 export const addressesRelations = relations(addresses, ({ one }) => ({
@@ -719,6 +1082,105 @@ export const marketingEventsRelations = relations(marketingEvents, ({ one }) => 
   }),
 }));
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PIVOT V2 RELATIONS — abonnements, bundles, fidélité, parrainage, cartes
+// ─────────────────────────────────────────────────────────────────────────────
+export const subscriptionPlansRelations = relations(subscriptionPlans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [subscriptions.customerId],
+    references: [customers.id],
+  }),
+  plan: one(subscriptionPlans, {
+    fields: [subscriptions.planId],
+    references: [subscriptionPlans.id],
+  }),
+  shipments: many(subscriptionShipments),
+}));
+
+export const subscriptionShipmentsRelations = relations(subscriptionShipments, ({ one }) => ({
+  subscription: one(subscriptions, {
+    fields: [subscriptionShipments.subscriptionId],
+    references: [subscriptions.id],
+  }),
+}));
+
+export const bundlesRelations = relations(bundles, ({ many }) => ({
+  items: many(bundleItems),
+}));
+
+export const bundleItemsRelations = relations(bundleItems, ({ one }) => ({
+  bundle: one(bundles, {
+    fields: [bundleItems.bundleId],
+    references: [bundles.id],
+  }),
+  product: one(products, {
+    fields: [bundleItems.productId],
+    references: [products.id],
+  }),
+  variant: one(productVariants, {
+    fields: [bundleItems.variantId],
+    references: [productVariants.id],
+  }),
+}));
+
+export const giftCardsRelations = relations(giftCards, ({ one, many }) => ({
+  purchaserCustomer: one(customers, {
+    fields: [giftCards.purchaserCustomerId],
+    references: [customers.id],
+  }),
+  purchaserOrder: one(orders, {
+    fields: [giftCards.purchaserOrderId],
+    references: [orders.id],
+  }),
+  transactions: many(giftCardTransactions),
+}));
+
+export const giftCardTransactionsRelations = relations(giftCardTransactions, ({ one }) => ({
+  giftCard: one(giftCards, {
+    fields: [giftCardTransactions.giftCardId],
+    references: [giftCards.id],
+  }),
+  order: one(orders, {
+    fields: [giftCardTransactions.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const loyaltyPointsTransactionsRelations = relations(
+  loyaltyPointsTransactions,
+  ({ one }) => ({
+    customer: one(customers, {
+      fields: [loyaltyPointsTransactions.customerId],
+      references: [customers.id],
+    }),
+    order: one(orders, {
+      fields: [loyaltyPointsTransactions.orderId],
+      references: [orders.id],
+    }),
+  }),
+);
+
+export const referralsRelations = relations(referrals, ({ one }) => ({
+  referrer: one(customers, {
+    fields: [referrals.referrerId],
+    references: [customers.id],
+    relationName: 'referrer',
+  }),
+  referee: one(customers, {
+    fields: [referrals.refereeId],
+    references: [customers.id],
+    relationName: 'referee',
+  }),
+  triggeringOrder: one(orders, {
+    fields: [referrals.triggeringOrderId],
+    references: [orders.id],
+  }),
+}));
+
 // ═════════════════════════════════════════════════════════════════════════════
 // TYPES INFERRED — à importer depuis les queries / composants
 // ═════════════════════════════════════════════════════════════════════════════
@@ -779,3 +1241,32 @@ export type NewInvoice = typeof invoices.$inferInsert;
 
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type NewNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+// Pivot V2
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type NewSubscriptionPlan = typeof subscriptionPlans.$inferInsert;
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type NewSubscription = typeof subscriptions.$inferInsert;
+
+export type SubscriptionShipment = typeof subscriptionShipments.$inferSelect;
+export type NewSubscriptionShipment = typeof subscriptionShipments.$inferInsert;
+
+export type Bundle = typeof bundles.$inferSelect;
+export type NewBundle = typeof bundles.$inferInsert;
+
+export type BundleItem = typeof bundleItems.$inferSelect;
+export type NewBundleItem = typeof bundleItems.$inferInsert;
+
+export type GiftCard = typeof giftCards.$inferSelect;
+export type NewGiftCard = typeof giftCards.$inferInsert;
+
+export type GiftCardTransaction = typeof giftCardTransactions.$inferSelect;
+export type NewGiftCardTransaction = typeof giftCardTransactions.$inferInsert;
+
+export type LoyaltyPointsTransaction = typeof loyaltyPointsTransactions.$inferSelect;
+export type NewLoyaltyPointsTransaction = typeof loyaltyPointsTransactions.$inferInsert;
+
+export type Referral = typeof referrals.$inferSelect;
+export type NewReferral = typeof referrals.$inferInsert;

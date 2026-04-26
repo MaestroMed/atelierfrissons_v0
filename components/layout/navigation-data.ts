@@ -161,6 +161,61 @@ export const PRIMARY_NAV: readonly NavItem[] = [
     },
   },
   {
+    label: 'Coffrets',
+    href: '/bundles',
+    hint: 'Soirée à deux, week-end, anniversaire de mariage',
+    megaMenu: {
+      groups: [
+        {
+          title: 'Coffrets signature',
+          items: [
+            {
+              label: 'Soirée à deux',
+              href: '/bundle/soiree-a-deux',
+              description: 'Quatre pièces — 89 €',
+            },
+            {
+              label: 'Évasion week-end',
+              href: '/bundle/evasion-week-end',
+              description: 'Lingerie + cosmétique + objet — 119 €',
+            },
+            {
+              label: 'Anniversaire de mariage',
+              href: '/bundle/anniversaire-de-mariage',
+              description: 'Coffret écrin — 149 €',
+            },
+            {
+              label: 'Tous les coffrets',
+              href: '/bundles',
+              description: 'Voir la sélection complète',
+            },
+          ],
+        },
+        {
+          title: 'À offrir',
+          items: [
+            { label: 'Cartes cadeaux', href: '/cartes-cadeaux' },
+            { label: 'Box mensuelle à offrir', href: '/box-mensuelle#cadeau' },
+            { label: 'Personnaliser un coffret', href: '/contact?sujet=coffret' },
+          ],
+        },
+      ],
+      editorial: {
+        caption: 'Le geste',
+        headline: 'Livré dans une boîte ivoire signée à la main',
+        body: 'Carte personnalisable, ruban or, monogramme AF gaufré. <em>Aucune mention extérieure du contenu.</em>',
+        ctaLabel: 'Voir les coffrets',
+        ctaHref: '/bundles',
+        tone: 'or',
+      },
+    },
+  },
+  {
+    label: 'Box mensuelle',
+    href: '/box-mensuelle',
+    hint: 'Trois plans, sans engagement, livraison discrète',
+  },
+  {
     label: 'À propos',
     href: '/a-propos',
     hint: 'La maison, la fondatrice, nos engagements',
