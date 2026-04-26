@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { BreadcrumbNav } from '@/components/shared/BreadcrumbNav';
+import { GlossarySearch, type GlossaryEntry } from '@/components/marketing/GlossarySearch';
 
 export const metadata: Metadata = {
   title: 'Glossaire — vocabulaire wellness intime',
@@ -10,13 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/glossaire' },
 };
 
-interface GlossaireEntry {
-  term: string;
-  category: 'Anatomie' | 'Matériaux' | 'Technologie' | 'Pratique' | 'Santé';
-  definition: string;
-}
-
-const GLOSSAIRE: readonly GlossaireEntry[] = [
+const GLOSSAIRE: readonly GlossaryEntry[] = [
   // Anatomie
   {
     term: 'Clitoris',
@@ -278,11 +273,6 @@ const GLOSSAIRE: readonly GlossaireEntry[] = [
 const CATEGORIES = ['Anatomie', 'Matériaux', 'Technologie', 'Pratique', 'Santé'] as const;
 
 export default function GlossairePage() {
-  const grouped = CATEGORIES.map((cat) => ({
-    category: cat,
-    entries: GLOSSAIRE.filter((e) => e.category === cat),
-  }));
-
   return (
     <>
       <section className="bg-ivoire-light py-12 md:py-16">
@@ -308,37 +298,8 @@ export default function GlossairePage() {
         </Container>
       </section>
 
-      <Container className="py-14 md:py-20" width="narrow">
-        {/* Nav catégories */}
-        <nav aria-label="Catégories" className="mb-12 flex flex-wrap justify-center gap-3">
-          {CATEGORIES.map((cat) => (
-            <a
-              key={cat}
-              href={`#${cat.toLowerCase()}`}
-              className="ui-caps border-encre/20 text-encre/70 hover:border-or hover:text-or-dark inline-flex items-center gap-2 border px-4 py-2 transition-colors"
-            >
-              {cat}
-            </a>
-          ))}
-        </nav>
-
-        {grouped.map(({ category, entries }) => (
-          <section key={category} id={category.toLowerCase()} className="mb-16">
-            <h2 className="font-display text-noir text-3xl font-medium">{category}</h2>
-            <Fleuron variant="divider" size="sm" color="or" className="mt-3 opacity-70" />
-            <dl className="divide-encre/10 border-encre/10 mt-8 divide-y border-y">
-              {entries.map((e) => (
-                <div
-                  key={e.term}
-                  className="grid grid-cols-1 gap-2 py-5 sm:grid-cols-[180px_1fr] sm:gap-6"
-                >
-                  <dt className="font-display text-noir text-base font-medium">{e.term}</dt>
-                  <dd className="text-encre/80 text-sm md:text-base">{e.definition}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        ))}
+      <Container className="py-14 md:py-20">
+        <GlossarySearch entries={GLOSSAIRE} categories={CATEGORIES} />
       </Container>
     </>
   );
