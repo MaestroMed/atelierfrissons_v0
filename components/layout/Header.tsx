@@ -87,10 +87,11 @@ export function Header({ cartCount = 0 }: HeaderProps) {
       data-scrolled={scrolled}
       className={cn(
         'bg-noir text-ivoire sticky top-0 z-40',
-        'transition-[box-shadow,backdrop-filter] duration-300',
-        'data-[scrolled=true]:shadow-[0_1px_0_rgba(201,163,107,0.2)]',
-        'supports-backdrop-filter:data-[scrolled=true]:bg-noir/92',
-        'supports-backdrop-filter:data-[scrolled=true]:backdrop-blur-sm',
+        'transition-[box-shadow,background-color,backdrop-filter] duration-300',
+        'data-[scrolled=true]:shadow-[0_1px_0_rgba(201,163,107,0.22)]',
+        'supports-backdrop-filter:data-[scrolled=true]:bg-noir/82',
+        'supports-backdrop-filter:data-[scrolled=true]:backdrop-blur-md',
+        'supports-backdrop-filter:data-[scrolled=true]:backdrop-saturate-150',
       )}
     >
       <AnnouncementBar />

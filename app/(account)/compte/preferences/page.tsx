@@ -1,75 +1,150 @@
 import type { Metadata } from 'next';
-import { Bell, Mail, ShoppingBag } from 'lucide-react';
+import { Mail, Bell, Sparkles, Heart, Repeat, Users, Globe, Anchor } from 'lucide-react';
+import { Fleuron } from '@/components/layout/Fleuron';
+import { EmailPreferencesForm } from '@/components/account/EmailPreferencesForm';
 
 export const metadata: Metadata = {
   title: 'Préférences',
   robots: { index: false, follow: false },
 };
 
+/**
+ * Préférences emails groupées par flux Klaviyo.
+ *
+ * Conformément au RGPD art. 21 (opposition), chaque catégorie est désopt-in
+ * indépendante. Le strictly-necessary (transactional) ne peut pas être désactivé
+ * car il est nécessaire à l'exécution du contrat (commande, livraison).
+ */
 export default async function PreferencesPage() {
   return (
-    <div className="flex flex-col gap-8">
-      <header>
-        <h2 className="font-display text-noir text-2xl font-medium md:text-3xl">Préférences</h2>
-        <p className="text-encre/65 mt-2 text-sm">
-          Choisissez le rythme et la nature des correspondances que vous recevez.
+    <div className="flex flex-col gap-10 md:gap-14">
+      {/* HERO */}
+      <section className="bg-ivoire-light border-encre/10 flex flex-col gap-3 border p-6 md:p-8">
+        <Fleuron variant="divider" size="sm" color="or" className="opacity-70" />
+        <h2 className="font-display text-noir text-2xl font-medium md:text-3xl">
+          Vos préférences de correspondance
+        </h2>
+        <p className="text-encre/70 text-sm leading-relaxed">
+          Choisissez le rythme et la nature des emails que vous recevez. Tous les changements sont
+          appliqués immédiatement et synchronisés avec notre fournisseur Klaviyo.
         </p>
-      </header>
-
-      <section className="space-y-4">
-        <PreferenceRow
-          icon={Mail}
-          title="Newsletter éditoriale"
-          description="Une lettre mensuelle — rituels, portraits, conseils sexologue. Jamais plus de deux fois par mois."
-          enabled
-        />
-        <PreferenceRow
-          icon={ShoppingBag}
-          title="Nouveautés produits"
-          description="Avant-premières des nouvelles pièces et collections capsule."
-          enabled={false}
-        />
-        <PreferenceRow
-          icon={Bell}
-          title="Alertes promotions"
-          description="Soldes saisonnières et offres exclusives — uniquement si vous le souhaitez."
-          enabled={false}
-        />
       </section>
 
-      <p className="text-encre/55 text-xs">
-        Vos préférences sont sauvegardées immédiatement. Vous pouvez vous désabonner à tout moment
-        via un lien en bas de chaque e-mail.
-      </p>
+      {/* Préférences emails — formulaire interactif */}
+      <section id="emails" className="flex flex-col gap-5">
+        <header className="flex items-center gap-3">
+          <Mail className="text-or-dark size-5" aria-hidden="true" strokeWidth={1.5} />
+          <h2 className="font-display text-noir text-2xl font-medium">Emails marketing</h2>
+        </header>
+        <EmailPreferencesForm />
+      </section>
+
+      {/* Emails transactionnels — info uniquement */}
+      <section className="border-encre/10 bg-ivoire-light flex flex-col gap-4 border p-6 md:p-8">
+        <header className="flex items-center gap-3">
+          <Bell className="text-or-dark size-5" aria-hidden="true" strokeWidth={1.5} />
+          <h2 className="font-display text-noir text-2xl font-medium">
+            Emails transactionnels
+          </h2>
+        </header>
+        <p className="text-encre/75 text-sm leading-relaxed">
+          Les emails liés à vos commandes, abonnements et compte ne peuvent pas être désactivés —
+          ils sont nécessaires à l'exécution de notre contrat (RGPD art. 6§1.b).
+        </p>
+        <ul className="border-encre/10 divide-encre/8 mt-2 divide-y border">
+          <TransactionalRow
+            icon={Bell}
+            label="Confirmation de commande"
+            note="Envoyé immédiatement après chaque commande."
+          />
+          <TransactionalRow
+            icon={Repeat}
+            label="Box mensuelle"
+            note="Notification à l'expédition + tracking."
+          />
+          <TransactionalRow
+            icon={Users}
+            label="Parrainage récompensé"
+            note="Quand un filleul passe sa première commande."
+          />
+          <TransactionalRow
+            icon={Sparkles}
+            label="Points fidélité"
+            note="Récap mensuel + alerte expiration J-30."
+          />
+          <TransactionalRow
+            icon={Heart}
+            label="Sécurité compte"
+            note="Connexion depuis un nouvel appareil, modification du mot de passe."
+          />
+        </ul>
+      </section>
+
+      {/* Préférences langue / locale */}
+      <section className="border-encre/10 bg-ivoire flex flex-col gap-4 border p-6 md:p-8">
+        <header className="flex items-center gap-3">
+          <Globe className="text-or-dark size-5" aria-hidden="true" strokeWidth={1.5} />
+          <h2 className="font-display text-noir text-2xl font-medium">Langue & devise</h2>
+        </header>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <p className="ui-caps text-encre/55 text-[10px] tracking-widest">Langue</p>
+            <p className="font-display text-noir mt-1 text-base">Français (FR)</p>
+            <p className="text-encre/55 text-xs">
+              Une seule langue pour l'instant. Anglais (EN) prévu sprint Q3 2026.
+            </p>
+          </div>
+          <div>
+            <p className="ui-caps text-encre/55 text-[10px] tracking-widest">Devise</p>
+            <p className="font-display text-noir mt-1 text-base">Euro (€)</p>
+            <p className="text-encre/55 text-xs">
+              Tous les prix sont affichés en euros TTC.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Confidentialité — lien vers RGPD */}
+      <section className="border-encre/10 bg-ivoire-light flex items-start gap-3 border p-6">
+        <Anchor className="text-or-dark mt-0.5 size-4 shrink-0" aria-hidden="true" strokeWidth={1.5} />
+        <div className="flex-1">
+          <p className="font-display text-noir text-base font-medium">Aller plus loin</p>
+          <p className="text-encre/70 mt-1 text-sm leading-relaxed">
+            Pour exporter ou effacer vos données, ou modifier vos consentements cookies, rendez-vous
+            sur la page{' '}
+            <a
+              href="/compte/donnees"
+              className="text-or-dark underline underline-offset-4 hover:text-or"
+            >
+              Mes données (RGPD)
+            </a>
+            .
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
 
-function PreferenceRow({
+function TransactionalRow({
   icon: Icon,
-  title,
-  description,
-  enabled,
+  label,
+  note,
 }: {
   icon: typeof Bell;
-  title: string;
-  description: string;
-  enabled: boolean;
+  label: string;
+  note: string;
 }) {
   return (
-    <div className="border-encre/10 bg-ivoire flex items-start justify-between gap-6 border p-5">
-      <div className="flex items-start gap-4">
-        <Icon className="text-or-dark mt-1 size-4 shrink-0" aria-hidden="true" />
-        <div>
-          <h3 className="font-display text-noir text-base font-medium">{title}</h3>
-          <p className="text-encre/70 mt-1.5 text-sm">{description}</p>
-        </div>
+    <li className="bg-ivoire flex items-start gap-3 p-4">
+      <Icon className="text-or-dark mt-0.5 size-4 shrink-0" aria-hidden="true" strokeWidth={1.5} />
+      <div className="flex-1">
+        <p className="font-display text-noir text-sm font-medium">{label}</p>
+        <p className="text-encre/65 mt-0.5 text-xs">{note}</p>
       </div>
-      <label className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center">
-        <input type="checkbox" defaultChecked={enabled} className="peer sr-only" />
-        <span className="bg-encre/20 peer-checked:bg-or absolute inset-0 rounded-full transition-colors" />
-        <span className="bg-ivoire shadow-card absolute top-0.5 left-0.5 size-5 rounded-full transition-transform peer-checked:translate-x-5" />
-      </label>
-    </div>
+      <span className="ui-caps bg-or/10 text-or-dark border-or/30 inline-flex items-center gap-1.5 border px-2 py-0.5 text-[9px]">
+        Toujours actif
+      </span>
+    </li>
   );
 }

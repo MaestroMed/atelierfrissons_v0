@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { normalizeEmail } from '@/lib/security/sanitize';
+import { checkHoneypot } from '@/lib/security/honeypot';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { createDoiToken } from '@/lib/auth/doi-token';
 import { sendNewsletterConfirmation } from '@/lib/resend/send';
@@ -34,6 +35,21 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ ok: false, message: 'Payload invalide' }, { status: 400 });
+  }
+
+  // Honeypot anti-bot — si déclenché, on simule success silencieusement
+  // pour ne pas signaler la détection au bot
+  const hp = checkHoneypot(body);
+  if (!hp.ok) {
+    if (process.env['NODE_ENV'] !== 'production') {
+      console.info(`[newsletter/subscribe] honeypot triggered: ${hp.reason}`);
+    }
+    return NextResponse.json({
+      ok: true,
+      status: 'pending',
+      message:
+        'Merci. Un email de confirmation vous est envoyé sous quelques minutes — vérifiez aussi votre dossier spams.',
+    });
   }
 
   const parsed = bodySchema.safeParse(body);

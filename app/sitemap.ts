@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getMockProducts } from '@/lib/mock/products';
+import { getMockBundles } from '@/lib/mock/bundles';
+import { getMockArticles, MOCK_GUIDES } from '@/lib/mock/articles';
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://atelierfrisson.fr';
 
@@ -21,24 +23,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, priority: 1.0, changeFrequency: 'daily', lastModified: now },
-    { url: `${SITE_URL}/boutique`, priority: 0.9, changeFrequency: 'daily', lastModified: now },
-    { url: `${SITE_URL}/collections`, priority: 0.8, changeFrequency: 'weekly', lastModified: now },
+    { url: `${SITE_URL}/boutique`, priority: 0.95, changeFrequency: 'daily', lastModified: now },
     {
-      url: `${SITE_URL}/collections/jour`,
-      priority: 0.8,
+      url: `${SITE_URL}/box-mensuelle`,
+      priority: 0.9,
+      changeFrequency: 'weekly',
+      lastModified: now,
+    },
+    { url: `${SITE_URL}/bundles`, priority: 0.9, changeFrequency: 'weekly', lastModified: now },
+    {
+      url: `${SITE_URL}/collections`,
+      priority: 0.85,
       changeFrequency: 'weekly',
       lastModified: now,
     },
     {
-      url: `${SITE_URL}/collections/nuit`,
-      priority: 0.8,
+      url: `${SITE_URL}/collections/couples`,
+      priority: 0.85,
       changeFrequency: 'weekly',
       lastModified: now,
     },
+    {
+      url: `${SITE_URL}/collections/elle`,
+      priority: 0.85,
+      changeFrequency: 'weekly',
+      lastModified: now,
+    },
+    {
+      url: `${SITE_URL}/collections/lui`,
+      priority: 0.85,
+      changeFrequency: 'weekly',
+      lastModified: now,
+    },
+    {
+      url: `${SITE_URL}/collections/cadeaux`,
+      priority: 0.85,
+      changeFrequency: 'weekly',
+      lastModified: now,
+    },
+    { url: `${SITE_URL}/cartes-cadeaux`, priority: 0.7, changeFrequency: 'monthly', lastModified: now },
     { url: `${SITE_URL}/a-propos`, priority: 0.7, changeFrequency: 'monthly', lastModified: now },
-    { url: `${SITE_URL}/rituels`, priority: 0.9, changeFrequency: 'weekly', lastModified: now },
-    { url: `${SITE_URL}/guides`, priority: 0.9, changeFrequency: 'weekly', lastModified: now },
-    { url: `${SITE_URL}/glossaire`, priority: 0.6, changeFrequency: 'monthly', lastModified: now },
+    { url: `${SITE_URL}/rituels`, priority: 0.85, changeFrequency: 'weekly', lastModified: now },
+    { url: `${SITE_URL}/guides`, priority: 0.8, changeFrequency: 'weekly', lastModified: now },
+    { url: `${SITE_URL}/faq`, priority: 0.6, changeFrequency: 'monthly', lastModified: now },
+    { url: `${SITE_URL}/dpo`, priority: 0.3, changeFrequency: 'yearly', lastModified: now },
+    { url: `${SITE_URL}/lancement`, priority: 0.95, changeFrequency: 'daily', lastModified: now },
+    { url: `${SITE_URL}/ambassadrices`, priority: 0.85, changeFrequency: 'weekly', lastModified: now },
   ];
 
   const productPages: MetadataRoute.Sitemap = products.map((p) => ({
@@ -47,6 +77,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'weekly' as const,
     lastModified: p.updatedAt,
     images: p.images.map((img) => `${SITE_URL}${img.url}`),
+  }));
+
+  // Bundles (coffrets cadeaux)
+  const bundlePages: MetadataRoute.Sitemap = getMockBundles().map((b) => ({
+    url: `${SITE_URL}/bundle/${b.slug}`,
+    priority: b.isFeatured ? 0.8 : 0.7,
+    changeFrequency: 'weekly' as const,
+    lastModified: b.updatedAt,
+    images: [`${SITE_URL}/api/og/pin/${b.slug}?type=bundle`],
+  }));
+
+  // Articles éditoriaux
+  const articlePages: MetadataRoute.Sitemap = getMockArticles().map((a) => ({
+    url: `${SITE_URL}/rituels/${a.slug}`,
+    priority: a.isFeatured ? 0.7 : 0.6,
+    changeFrequency: 'monthly' as const,
+    lastModified: a.publishedAt,
+  }));
+
+  // Guides piliers (long-form SEO)
+  const guidePages: MetadataRoute.Sitemap = MOCK_GUIDES.map((g) => ({
+    url: `${SITE_URL}/guides/${g.slug}`,
+    priority: 0.75,
+    changeFrequency: 'monthly' as const,
+    lastModified: g.publishedAt,
   }));
 
   const legalPages: MetadataRoute.Sitemap = [
@@ -65,6 +120,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
   }));
 
-  // TODO Sprint 6 : importer articles MDX + queries forge
-  return [...staticPages, ...productPages, ...legalPages];
+  return [
+    ...staticPages,
+    ...productPages,
+    ...bundlePages,
+    ...articlePages,
+    ...guidePages,
+    ...legalPages,
+  ];
 }

@@ -6,7 +6,16 @@ import { ReviewStars } from '@/components/shop/ReviewStars';
 
 interface ProductCinematicHeroProps {
   /** Tonalité de la collection. */
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   /** Caption (ex: « Collection NUIT · Pièce signature »). */
   caption: string;
   /** Nom du produit (devient h1). */
@@ -19,6 +28,11 @@ interface ProductCinematicHeroProps {
   ambientWord?: string | undefined;
   /** Texte du CTA scroll-down. */
   scrollCueLabel?: string | undefined;
+  /**
+   * Slug produit — utilisé pour `view-transition-name` afin de morpher la
+   * silhouette de la grille (`product-${slug}`) vers ce hero en navigation.
+   */
+  slug?: string;
 }
 
 /**
@@ -44,6 +58,7 @@ export function ProductCinematicHero({
   rating,
   ambientWord,
   scrollCueLabel = 'Voir, lire, acheter',
+  slug,
 }: ProductCinematicHeroProps) {
   const isNuit = collection === 'nuit';
   const isDarkSignature = collection === 'signature' || collection === 'inaugurale';
@@ -66,9 +81,10 @@ export function ProductCinematicHero({
     <section
       aria-label={`Présentation — ${name}`}
       className={cn(
-        'relative isolate flex min-h-[60vh] items-center overflow-hidden md:min-h-[65vh]',
+        'product-hero relative isolate flex min-h-[60vh] items-center overflow-hidden md:min-h-[65vh]',
         bgClass,
       )}
+      style={slug ? { viewTransitionName: `product-${slug}` } : undefined}
     >
       {/* Glow ambient adapté à la tonalité */}
       <div

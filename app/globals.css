@@ -470,6 +470,165 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────
+ * Polish premium 2027 — scroll-driven typography (Bodoni variable axis).
+ *
+ * Le wordmark hero pivote progressivement vers l'italique au scroll.
+ * Utilise CSS scroll-driven animations (Chrome 115+, Safari 17.4+, FF 130+).
+ * Fallback gracieux : pas de scroll-driven, fontvariation reste statique.
+ * ────────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: scroll()) {
+  .scroll-italic-axis {
+    animation: af-italic-shift linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 30vh;
+  }
+
+  .scroll-weight-axis {
+    animation: af-weight-shift linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 50vh;
+  }
+}
+
+@keyframes af-italic-shift {
+  from {
+    font-variation-settings: 'ital' 0, 'wght' 600;
+    letter-spacing: 0.04em;
+  }
+  to {
+    font-variation-settings: 'ital' 0.6, 'wght' 600;
+    letter-spacing: 0.06em;
+  }
+}
+
+@keyframes af-weight-shift {
+  from {
+    font-variation-settings: 'wght' 600;
+  }
+  to {
+    font-variation-settings: 'wght' 500;
+  }
+}
+
+/* Drop cap première lettre des articles — magazine éditorial */
+.prose-article > p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  font-size: 4.5em;
+  line-height: 0.85;
+  float: left;
+  padding: 0.05em 0.12em 0 0;
+  color: var(--color-or-dark);
+  font-weight: 500;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Glass morphism — utilitaires premium (touch contrôlé, pas full Liquid Glass).
+ *
+ * Trois niveaux d'intensité :
+ *   .glass-discreet  → léger blur 8px + 80 % opacity (header scroll)
+ *   .glass-medium    → 14px + 60 % (cart drawer overlay)
+ *   .glass-immersive → 24px + 45 % (modal backdrops)
+ *
+ * Fallback : sans support backdrop-filter, on tombe sur opacité solide
+ * (visuel cohérent, juste sans flou).
+ * ────────────────────────────────────────────────────────────────── */
+.glass-discreet {
+  background-color: rgb(242 234 223 / 0.92);
+  border-color: rgb(28 26 23 / 0.06);
+}
+@supports (backdrop-filter: blur(8px)) {
+  .glass-discreet {
+    background-color: rgb(242 234 223 / 0.78);
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+  }
+}
+
+.glass-medium {
+  background-color: rgb(242 234 223 / 0.88);
+  border-color: rgb(28 26 23 / 0.08);
+}
+@supports (backdrop-filter: blur(14px)) {
+  .glass-medium {
+    background-color: rgb(242 234 223 / 0.62);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
+}
+
+.glass-immersive {
+  background-color: rgb(10 7 6 / 0.65);
+}
+@supports (backdrop-filter: blur(24px)) {
+  .glass-immersive {
+    background-color: rgb(10 7 6 / 0.45);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * View Transitions — shared element morphing produit card ↔ produit page.
+ *
+ * Le produit silhouette de la grille morph vers le hero produit en navigation.
+ * `view-transition-name` est posé en inline style sur les composants concernés
+ * pour permettre l'unicité par slug.
+ * ────────────────────────────────────────────────────────────────── */
+::view-transition-old(.product-hero),
+::view-transition-new(.product-hero) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0.18, 1);
+}
+
+/* Crossfade plus long sur les images produit pour le morphing fluide */
+::view-transition-image-pair(.product-hero) {
+  animation-duration: 380ms;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Cursor follower (héros uniquement) — petit fleuron qui suit la souris.
+ * Mounted via CursorFollower.tsx, désactivé sur touch + reduced-motion.
+ * Style fixe global pour cohérence.
+ * ────────────────────────────────────────────────────────────────── */
+.af-cursor-follower {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 80;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-or);
+  border-radius: 50%;
+  background: rgb(201 163 107 / 0.08);
+  transform: translate3d(-50%, -50%, 0);
+  transition:
+    transform 90ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 220ms ease,
+    height 220ms ease,
+    background-color 220ms ease;
+  mix-blend-mode: difference;
+}
+.af-cursor-follower[data-state='hover-cta'] {
+  width: 44px;
+  height: 44px;
+  background: rgb(201 163 107 / 0.18);
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * Magnetic button — attraction subtile du CTA vers le curseur.
+ * Géré par MagneticButton.tsx (client) qui ajuste --mx, --my en JS.
+ * Le translate ne dépasse jamais 6 px pour rester subtil.
+ * ────────────────────────────────────────────────────────────────── */
+.af-magnetic {
+  --mx: 0px;
+  --my: 0px;
+  transform: translate3d(var(--mx), var(--my), 0);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* ──────────────────────────────────────────────────────────────────
  * Accessibilité : respect de prefers-reduced-motion.
  * ────────────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -481,5 +640,13 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     view-transition-name: none !important;
+  }
+  .af-cursor-follower,
+  .af-magnetic {
+    display: none !important;
+  }
+  .scroll-italic-axis,
+  .scroll-weight-axis {
+    animation: none !important;
   }
 }

@@ -140,8 +140,10 @@ export async function updateProductAction(input: ProductEditInput): Promise<Admi
   revalidatePath(`/admin/produits/${data.slug}`);
   revalidatePath(`/produit/${data.slug}`);
   revalidatePath('/boutique');
-  revalidatePath('/collections/jour');
-  revalidatePath('/collections/nuit');
+  revalidatePath('/collections/couples');
+  revalidatePath('/collections/elle');
+  revalidatePath('/collections/lui');
+  revalidatePath('/collections/cadeaux');
   revalidatePath('/');
 
   return {

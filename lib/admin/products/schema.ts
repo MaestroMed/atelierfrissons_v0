@@ -41,7 +41,7 @@ export const productEditSchema = z.object({
   lowStockThreshold: z.coerce.number().int().min(0).max(1000).default(5),
 
   collection: z
-    .enum(['jour', 'nuit', 'inaugurale', 'signature'])
+    .enum(['couples', 'elle', 'lui', 'cadeaux', 'jour', 'nuit', 'inaugurale', 'signature'])
     .nullable()
     .or(z.literal(''))
     .transform((v) => (v === '' ? null : v)),
@@ -62,13 +62,24 @@ export const productEditSchema = z.object({
 
 export type ProductEditInput = z.infer<typeof productEditSchema>;
 
-/** Liste des collections pour les selects. */
+/**
+ * Liste des collections / audiences pour les selects.
+ *
+ * Pivot V2 : `couples` / `elle` / `lui` / `cadeaux` sont les audiences
+ * primaires utilisées en navigation. Les anciennes capsules `jour` / `nuit`
+ * etc. sont conservées pour back-compat (produits historiques) mais ne
+ * sont plus à choisir pour les nouveaux produits du pivot.
+ */
 export const COLLECTION_OPTIONS = [
   { value: '', label: '— Aucune —' },
-  { value: 'jour', label: 'JOUR' },
-  { value: 'nuit', label: 'NUIT' },
-  { value: 'inaugurale', label: 'Inaugurale' },
-  { value: 'signature', label: 'Signature' },
+  { value: 'couples', label: 'Pour Vous Deux', group: 'Pivot V2' },
+  { value: 'elle', label: 'Pour Elle', group: 'Pivot V2' },
+  { value: 'lui', label: 'Pour Lui', group: 'Pivot V2' },
+  { value: 'cadeaux', label: 'Cadeaux', group: 'Pivot V2' },
+  { value: 'jour', label: 'JOUR (legacy)', group: 'Capsules legacy' },
+  { value: 'nuit', label: 'NUIT (legacy)', group: 'Capsules legacy' },
+  { value: 'inaugurale', label: 'Inaugurale (legacy)', group: 'Capsules legacy' },
+  { value: 'signature', label: 'Signature (legacy)', group: 'Capsules legacy' },
 ] as const;
 
 export const STATUS_OPTIONS = [

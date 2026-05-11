@@ -1,0 +1,25 @@
+{
+  "cookies": [
+    {
+      "name": "af_age_gate",
+      "value": "1",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 9999999999,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "af_consent_v1",
+      "value": "%7B%22strictly_necessary%22%3Atrue%2C%22analytics%22%3Afalse%2C%22marketing%22%3Afalse%2C%22personalization%22%3Afalse%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 9999999999,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

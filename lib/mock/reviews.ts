@@ -22,7 +22,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Premier Frisson ────────────────────────────────────────────────
   {
     id: 'r-pf-1',
-    productSlug: 'premier-frisson',
+    productSlug: 'duo',
     rating: 5,
     title: 'Un premier objet qui n’en a pas l’air',
     body: 'Honnêtement, j’avais peur de commander ce genre d’objet. Tout a été fait pour que la démarche soit douce — la boîte, la notice, la carte. Le toucher de la matière est vraiment différent de ce que j’ai pu tester ailleurs.',
@@ -33,7 +33,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-pf-2',
-    productSlug: 'premier-frisson',
+    productSlug: 'duo',
     rating: 5,
     title: 'La douceur au-delà de mes attentes',
     body: 'Un objet sobre, silencieux, sans ce côté « gadget » qui m’avait toujours refroidie. On sent la qualité dès qu’on le sort de son emballage. Je recommande à toute femme qui veut franchir le pas avec délicatesse.',
@@ -44,7 +44,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-pf-3',
-    productSlug: 'premier-frisson',
+    productSlug: 'duo',
     rating: 4,
     title: 'Très bien, petite réserve sur la batterie',
     body: 'Design impeccable, matière soyeuse, vraiment un bel objet. Mon seul bémol : l’autonomie est un peu courte à mon goût après plusieurs semaines d’usage. Mais le SAV a été adorable et m’a vite rassurée.',
@@ -55,7 +55,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-pf-4',
-    productSlug: 'premier-frisson',
+    productSlug: 'duo',
     rating: 5,
     body: 'J’ai offert à une amie qui venait de divorcer — elle a fondu quand elle a ouvert la boîte. Ce n’est pas le « produit » qui compte, c’est la manière dont il est présenté. Bravo à toute l’équipe.',
     authorName: 'Iris',
@@ -67,7 +67,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Velours Rouge ───────────────────────────────────────────────────
   {
     id: 'r-vr-1',
-    productSlug: 'velours-rouge',
+    productSlug: 'velours',
     rating: 5,
     title: 'Finition miroir — comme annoncé',
     body: 'La finition glossy est vraiment fidèle aux photos. À la main, c’est fluide, dense, silencieux. Très bel objet qu’on n’a pas envie de ranger dans un tiroir. Il trône sur ma commode comme un petit objet sculpté.',
@@ -78,7 +78,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-vr-2',
-    productSlug: 'velours-rouge',
+    productSlug: 'velours',
     rating: 5,
     title: 'Un rituel du soir qui change tout',
     body: 'Je ne pensais pas qu’un objet pouvait devenir une ancre. J’ai intégré Velours Rouge à ma routine du soir (après le bain, avant la lecture) et c’est devenu un marqueur de bascule entre la journée et la nuit.',
@@ -89,7 +89,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-vr-3',
-    productSlug: 'velours-rouge',
+    productSlug: 'velours',
     rating: 4,
     body: 'Superbe objet, livraison impeccable et discrète. Petit reproche : j’aurais aimé un mode encore plus doux pour les soirs fatigués. Sinon rien à dire, je recommande.',
     authorName: 'Pauline',
@@ -99,7 +99,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-vr-4',
-    productSlug: 'velours-rouge',
+    productSlug: 'velours',
     rating: 5,
     title: 'Un cadeau qui n’a pas mis mal à l’aise',
     body: 'Offert à ma compagne pour son anniversaire. La carte signée à la main + l’emballage vraiment neutre ont fait toute la différence — rien de gênant à ouvrir en public. Et la qualité de l’objet est au rendez-vous.',
@@ -112,7 +112,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Essentiel Jour ──────────────────────────────────────────────────
   {
     id: 'r-ej-1',
-    productSlug: 'essentiel-jour',
+    productSlug: 'etincelle',
     rating: 5,
     title: 'La sobriété, vraiment',
     body: 'C’est tout ce que j’attendais : un objet discret, léger, silencieux, avec une courbe pensée. Pas d’ostentation, pas de gadgeterie. Juste un bon objet bien fait.',
@@ -123,7 +123,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-ej-2',
-    productSlug: 'essentiel-jour',
+    productSlug: 'etincelle',
     rating: 4,
     body: 'Belle matière, bon packaging, design épuré. J’aurais souhaité une notice un peu plus illustrée pour la prise en main mais c’est un détail.',
     authorName: 'Noémie',
@@ -133,7 +133,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-ej-3',
-    productSlug: 'essentiel-jour',
+    productSlug: 'etincelle',
     rating: 5,
     body: 'Commandé après un article dans ELLE. Zéro regret — le site tient ses promesses, le produit aussi. Et merci pour l’emballage vraiment discret, livré au bureau sans problème.',
     authorName: 'Victoire',
@@ -145,7 +145,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Noir Profond ────────────────────────────────────────────────────
   {
     id: 'r-np-1',
-    productSlug: 'noir-profond',
+    productSlug: 'profond',
     rating: 5,
     title: 'L’objet signature, à juste titre',
     body: 'Un peu plus de budget, mais on comprend pourquoi dès la prise en main. La densité, la courbe, la finition mate — tout est pensé. Investissement qui vaut le coup.',
@@ -156,7 +156,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-np-2',
-    productSlug: 'noir-profond',
+    productSlug: 'profond',
     rating: 5,
     body: 'Acheté en couple après un dîner où on a parlé de désir comme on ne l’avait jamais fait. Il nous accompagne depuis trois mois — aucune usure, aucune déception.',
     authorName: 'Charlotte',
@@ -166,7 +166,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-np-3',
-    productSlug: 'noir-profond',
+    productSlug: 'profond',
     rating: 5,
     title: 'Noir profond — comme son nom',
     body: 'Le noir est vraiment profond, pas brillant, pas cheap. On dirait un objet d’art. Ma compagne l’a posé sur son chevet pendant une semaine avant qu’on l’utilise — juste pour le regarder.',
@@ -179,7 +179,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Albâtre ─────────────────────────────────────────────────────────
   {
     id: 'r-alb-1',
-    productSlug: 'albatre',
+    productSlug: 'onde',
     rating: 5,
     title: 'Le velouté d’une peau',
     body: 'La matière mate est troublante — on a presque l’impression de toucher une surface vivante. Très beau compromis entre douceur et présence. Un de mes objets préférés de la maison.',
@@ -190,7 +190,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-alb-2',
-    productSlug: 'albatre',
+    productSlug: 'onde',
     rating: 4,
     body: 'Très joli, bonne matière. L’entretien demande un peu d’attention (mieux vaut bien sécher après usage) mais c’est écrit clairement dans la notice.',
     authorName: 'Stéphanie',
@@ -202,7 +202,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   // ─── Laque Minuit ────────────────────────────────────────────────────
   {
     id: 'r-lm-1',
-    productSlug: 'laque-minuit',
+    productSlug: 'murmure',
     rating: 5,
     title: 'Pièce de collection',
     body: 'Je ne savais pas qu’un objet de ce genre pouvait susciter ce type d’émotion — admiration, presque contemplation. Le laqué rouge profond est parfait. Merci pour ce niveau d’exigence.',
@@ -213,7 +213,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-lm-2',
-    productSlug: 'laque-minuit',
+    productSlug: 'murmure',
     rating: 5,
     body: 'La finition laquée est vraiment différente de ce que proposent d’autres marques. Ça se voit que chaque pièce a été pensée. Belle découverte.',
     authorName: 'Camille',
@@ -223,7 +223,7 @@ export const MOCK_REVIEWS: readonly MockReview[] = [
   },
   {
     id: 'r-lm-3',
-    productSlug: 'laque-minuit',
+    productSlug: 'murmure',
     rating: 4,
     body: 'Très satisfaite. Un peu plus lourd que prévu en main mais c’est lié à la densité du silicone médical — signal de qualité.',
     authorName: 'Inès',

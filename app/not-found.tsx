@@ -82,7 +82,7 @@ export default function NotFound() {
 
 const SUGGESTED: readonly { href: string; label: string; name: string }[] = [
   { href: '/boutique', label: 'Tous les objets', name: 'Boutique' },
-  { href: '/collections/jour', label: 'Collection', name: 'JOUR' },
-  { href: '/collections/nuit', label: 'Collection', name: 'NUIT' },
-  { href: '/rituels', label: 'Éditorial', name: 'Le Journal' },
+  { href: '/collections/couples', label: 'Pour qui', name: 'Pour Vous Deux' },
+  { href: '/bundles', label: 'Coffrets', name: 'Bundles' },
+  { href: '/box-mensuelle', label: 'Abonnement', name: 'Box Mensuelle' },
 ] as const;

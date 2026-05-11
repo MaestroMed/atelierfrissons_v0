@@ -33,8 +33,17 @@ export function ProductCard({
   variant = 'default',
   priority = false,
 }: ProductCardProps) {
-  const isJour = product.collection === 'jour' || product.collection === 'inaugurale';
-  const isNuit = product.collection === 'nuit';
+  // Audience pivot V2 + capsules legacy → 3 variantes visuelles cohérentes
+  // avec la palette Atelier Frisson.
+  const isLight =
+    product.collection === 'jour' ||
+    product.collection === 'inaugurale' ||
+    product.collection === 'elle' ||
+    product.collection === 'cadeaux';
+  const isRouge = product.collection === 'couples' || product.collection === 'nuit';
+  const isDark = product.collection === 'lui' || product.collection === 'signature';
+  // Fallback (collection null) → ivoire light pour rester premium-discret
+  const isJour = isLight || (!isRouge && !isDark);
   const isCompact = variant === 'compact';
   const reviewSummary = summarizeReviews(getMockReviewsForProduct(product.slug));
 
@@ -44,9 +53,9 @@ export function ProductCard({
       className={cn(
         'group relative flex flex-col overflow-hidden border border-transparent',
         'transition-[border-color,transform,box-shadow] duration-500',
-        isJour ? 'bg-ivoire-light text-encre hover:border-or' : '',
-        isNuit ? 'bg-rouge text-ivoire hover:border-or' : '',
-        !isJour && !isNuit ? 'bg-noir text-ivoire hover:border-or' : '',
+        isJour ? 'bg-ivoire-light text-encre hover:border-or-dark' : '',
+        isRouge ? 'bg-rouge text-ivoire hover:border-or' : '',
+        isDark ? 'bg-noir text-ivoire hover:border-or' : '',
         'hover:shadow-card-hover',
         className,
       )}
@@ -59,11 +68,11 @@ export function ProductCard({
         className={cn(
           'relative flex overflow-hidden',
           isCompact ? 'aspect-square' : 'aspect-[4/5]',
-          isJour ? 'bg-ivoire' : isNuit ? 'bg-rouge' : 'bg-noir',
+          isJour ? 'bg-ivoire' : isRouge ? 'bg-rouge' : 'bg-noir',
         )}
       >
         <ProductSilhouette
-          variant={isNuit ? 'nuit' : 'jour'}
+          variant={isDark || isRouge ? 'nuit' : 'jour'}
           animationDelayMs={priority ? 0 : 200}
           className={cn(
             'm-auto h-[78%] transition-transform duration-700 ease-out',
@@ -167,10 +176,7 @@ export function ProductCard({
             priceCents={product.priceCents}
             compareAtPriceCents={product.compareAtPriceCents}
             size={isCompact ? 'md' : 'lg'}
-            className={cn(
-              isNuit && 'text-ivoire [&_*]:text-ivoire',
-              !isJour && !isNuit && 'text-ivoire [&_*]:text-ivoire',
-            )}
+            className={cn(!isJour && 'text-ivoire [&_*]:text-ivoire')}
           />
           <span
             className={cn(

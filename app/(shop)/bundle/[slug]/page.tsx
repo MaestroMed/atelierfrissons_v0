@@ -20,6 +20,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: false, follow: false },
     };
   }
+
+  const priceEur = (bundle.priceCents / 100).toFixed(2);
+  const compareEur =
+    bundle.compareAtPriceCents != null
+      ? (bundle.compareAtPriceCents / 100).toFixed(2)
+      : null;
+  const isAvailable =
+    bundle.status === 'active' &&
+    (!bundle.availableUntil || bundle.availableUntil.getTime() > Date.now());
+
   return {
     title: bundle.seoTitle ?? `${bundle.name} — Atelier Frisson`,
     description: bundle.seoDescription ?? bundle.descriptionShort,
@@ -28,6 +38,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       title: `${bundle.name} — Atelier Frisson`,
       description: bundle.descriptionShort,
+      images: [
+        {
+          url: `/api/og/pin/${bundle.slug}?type=bundle`,
+          width: 1000,
+          height: 1500,
+          alt: `${bundle.name} — coffret signé Atelier Frisson`,
+        },
+      ],
+    },
+    /**
+     * Pinterest Rich Pins (Product) — coffret avec prix bundle (avantage),
+     * prix barré (somme produits) et disponibilité saisonnière éventuelle.
+     */
+    other: {
+      'og:type': 'product',
+      'product:price:amount': priceEur,
+      'product:price:currency': 'EUR',
+      'product:availability': isAvailable ? 'in stock' : 'out of stock',
+      'product:condition': 'new',
+      'product:retailer_item_id': bundle.slug,
+      'product:brand': 'Atelier Frisson',
+      ...(compareEur
+        ? {
+            'product:original_price:amount': compareEur,
+            'product:original_price:currency': 'EUR',
+          }
+        : {}),
     },
   };
 }

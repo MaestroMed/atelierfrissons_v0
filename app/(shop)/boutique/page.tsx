@@ -10,17 +10,31 @@ import { getMockCategories, getMockProducts } from '@/lib/mock/products';
 import type { Product } from '@/lib/db/schema';
 
 export const metadata: Metadata = {
-  title: 'Boutique — la collection complète',
+  title: 'Boutique — Pour vous deux, pour elle, pour lui | Atelier Frisson',
   description:
-    'Tous les objets Atelier Frisson — silicone médical, design éditorial, livraison discrète France. Filtres par collection JOUR/NUIT et par catégorie.',
+    'Toute la boutique Atelier Frisson — objets, lingerie soie, cosmétique intime, accessoires. Filtres par audience et catégorie. Livraison discrète France.',
   alternates: { canonical: '/boutique' },
 };
 
 interface BoutiqueSearchParams {
-  collection?: 'jour' | 'nuit';
+  audience?: 'couples' | 'elle' | 'lui' | 'cadeaux';
   category?: string;
   sort?: SortKey;
 }
+
+const AUDIENCE_TO_TAG = {
+  couples: 'pour-vous-deux',
+  elle: 'pour-elle',
+  lui: 'pour-lui',
+  cadeaux: 'cadeaux',
+} as const;
+
+const AUDIENCE_LABELS = {
+  couples: 'Pour Vous Deux',
+  elle: 'Pour Elle',
+  lui: 'Pour Lui',
+  cadeaux: 'Cadeaux',
+} as const;
 
 export default async function BoutiquePage({
   searchParams,
@@ -32,8 +46,11 @@ export default async function BoutiquePage({
   const categories = getMockCategories();
 
   let filtered: Product[] = [...allProducts];
-  if (params.collection) {
-    filtered = filtered.filter((p) => p.collection === params.collection);
+  if (params.audience) {
+    const tag = AUDIENCE_TO_TAG[params.audience];
+    filtered = filtered.filter(
+      (p) => p.collection === params.audience || p.tags.includes(tag),
+    );
   }
   if (params.category) {
     const cat = categories.find((c) => c.slug === params.category);
@@ -41,11 +58,14 @@ export default async function BoutiquePage({
   }
   const sorted = applyProductSort(filtered, params.sort ?? 'featured');
 
-  // Counts par filtre
-  const collectionCounts = {
-    jour: allProducts.filter((p) => p.collection === 'jour').length,
-    nuit: allProducts.filter((p) => p.collection === 'nuit').length,
+  // Counts par audience (croisé sur tags)
+  const audienceCounts = {
+    couples: allProducts.filter((p) => p.collection === 'couples' || p.tags.includes('pour-vous-deux')).length,
+    elle: allProducts.filter((p) => p.collection === 'elle' || p.tags.includes('pour-elle')).length,
+    lui: allProducts.filter((p) => p.collection === 'lui' || p.tags.includes('pour-lui')).length,
+    cadeaux: allProducts.filter((p) => p.collection === 'cadeaux' || p.tags.includes('cadeaux')).length,
   };
+
   const categoryCounts = Object.fromEntries(
     categories.map((c) => [c.id, allProducts.filter((p) => p.categoryId === c.id).length]),
   );
@@ -58,18 +78,26 @@ export default async function BoutiquePage({
             items={[
               { label: 'Accueil', href: '/' },
               { label: 'Boutique', href: '/boutique' },
+              ...(params.audience
+                ? [
+                    {
+                      label: AUDIENCE_LABELS[params.audience],
+                      href: `/boutique?audience=${params.audience}`,
+                    },
+                  ]
+                : []),
             ]}
             className="mb-8"
           />
           <header className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
             <p className="ui-caps text-or-dark">La collection complète</p>
             <h1 className="font-display text-noir text-4xl font-medium md:text-5xl lg:text-6xl">
-              Boutique
+              {params.audience ? AUDIENCE_LABELS[params.audience] : 'Boutique'}
             </h1>
             <Fleuron variant="divider" size="md" color="or" className="mt-1 opacity-80" />
             <p className="font-italic-editorial text-encre/75 text-base md:text-lg">
-              Huit objets composés en silicone médical certifié, livrés dans un emballage neutre
-              signé de la main.
+              Vingt pièces signature — silicone médical certifié, soie 22 momme, dentelle Caudry,
+              parfumerie Grasse. Livraison discrète France et UE.
             </p>
           </header>
         </Container>
@@ -79,9 +107,13 @@ export default async function BoutiquePage({
         <div className="grid gap-10 lg:grid-cols-[260px_1fr] lg:gap-14">
           {/* Filtres */}
           <ProductFilters
-            collections={[
-              { value: 'jour', label: 'JOUR', count: collectionCounts.jour },
-              { value: 'nuit', label: 'NUIT', count: collectionCounts.nuit },
+            audiencesTitle="Pour qui"
+            categoriesTitle="Catégorie"
+            audiences={[
+              { value: 'couples', label: AUDIENCE_LABELS.couples, count: audienceCounts.couples },
+              { value: 'elle', label: AUDIENCE_LABELS.elle, count: audienceCounts.elle },
+              { value: 'lui', label: AUDIENCE_LABELS.lui, count: audienceCounts.lui },
+              { value: 'cadeaux', label: AUDIENCE_LABELS.cadeaux, count: audienceCounts.cadeaux },
             ]}
             categories={categories.map((c) => ({
               value: c.slug,
@@ -94,7 +126,7 @@ export default async function BoutiquePage({
           <div className="flex flex-col gap-6">
             <div className="border-encre/10 flex flex-col items-start justify-between gap-4 border-b pb-4 md:flex-row md:items-center">
               <p className="ui-caps text-encre/65">
-                {sorted.length} objet{sorted.length > 1 ? 's' : ''} en composition
+                {sorted.length} pièce{sorted.length > 1 ? 's' : ''} en composition
               </p>
               <ProductSort />
             </div>

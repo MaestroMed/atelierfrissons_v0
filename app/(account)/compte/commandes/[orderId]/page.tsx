@@ -43,12 +43,12 @@ export default async function CommandeDetailPage({ params }: PageProps) {
     orderNumber: orderId,
     status: 'paid',
     createdAt: new Date(),
-    subtotalCents: 21800,
+    subtotalCents: 28800,
     shippingCents: 0,
-    totalCents: 21800,
+    totalCents: 28800,
     items: [
-      { name: 'Premier Frisson', quantity: 1, unitPriceCents: 8900, slug: 'premier-frisson' },
-      { name: 'Velours Rouge', quantity: 1, unitPriceCents: 12900, slug: 'velours-rouge' },
+      { name: 'Velours', quantity: 1, unitPriceCents: 16900, slug: 'velours' },
+      { name: 'Duo', quantity: 1, unitPriceCents: 11900, slug: 'duo' },
     ],
     shippingAddress: {
       line1: '12 rue de la Maison',

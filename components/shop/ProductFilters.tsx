@@ -11,25 +11,34 @@ interface FilterOption {
 }
 
 interface ProductFiltersProps {
-  collections: readonly FilterOption[];
+  audiences: readonly FilterOption[];
   categories: readonly FilterOption[];
+  audiencesTitle?: string;
+  categoriesTitle?: string;
   className?: string;
 }
 
 /**
- * Filtres boutique — collection + catégorie via URL searchParams (pas
- * de state local : le rendu serveur reste source de vérité).
+ * Filtres boutique — audience pivot V2 (Pour Vous Deux / Pour Elle / Pour Lui /
+ * Cadeaux) + catégorie produit (Objets / Lingerie / Cosmétique / Accessoires)
+ * via URL searchParams (le rendu serveur reste source de vérité).
  *
- * Cliquer un filtre push une nouvelle URL `?collection=jour&category=plaisir-solo`.
+ * Cliquer un filtre push une nouvelle URL `?audience=elle&category=lingerie`.
  * `useTransition` empêche le blocage UI pendant le re-render serveur.
  */
-export function ProductFilters({ collections, categories, className }: ProductFiltersProps) {
+export function ProductFilters({
+  audiences,
+  categories,
+  audiencesTitle = 'Pour qui',
+  categoriesTitle = 'Catégorie',
+  className,
+}: ProductFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const activeCollection = params.get('collection');
+  const activeAudience = params.get('audience');
   const activeCategory = params.get('category');
 
   const setParam = (key: string, value: string | null) => {
@@ -39,7 +48,7 @@ export function ProductFilters({ collections, categories, className }: ProductFi
     } else {
       next.delete(key);
     }
-    next.delete('page'); // reset pagination
+    next.delete('page');
     startTransition(() => {
       router.push(`${pathname}?${next.toString()}`, { scroll: false });
     });
@@ -48,21 +57,25 @@ export function ProductFilters({ collections, categories, className }: ProductFi
   return (
     <aside
       aria-label="Filtres produits"
-      className={cn('flex flex-col gap-8', isPending && 'opacity-70 transition-opacity', className)}
+      className={cn(
+        'flex flex-col gap-8',
+        isPending && 'opacity-70 transition-opacity',
+        className,
+      )}
     >
       <FilterGroup
-        title="Collection"
-        options={collections}
-        active={activeCollection}
-        onChange={(v) => setParam('collection', v)}
+        title={audiencesTitle}
+        options={audiences}
+        active={activeAudience}
+        onChange={(v) => setParam('audience', v)}
       />
       <FilterGroup
-        title="Catégorie"
+        title={categoriesTitle}
         options={categories}
         active={activeCategory}
         onChange={(v) => setParam('category', v)}
       />
-      {(activeCollection || activeCategory) && (
+      {(activeAudience || activeCategory) && (
         <button
           type="button"
           onClick={() => {

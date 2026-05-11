@@ -20,7 +20,16 @@ export interface QuickViewProduct {
   compareAtPriceCents: number | null;
   stockStatus: string;
   stockQuantity: number;
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   /** Note moyenne (0-5) — optionnel, affiche ReviewStars si fourni. */
   averageRating?: number;
   reviewCount?: number;

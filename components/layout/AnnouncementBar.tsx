@@ -14,12 +14,13 @@ const DISMISS_KEY = 'af_announcement_dismissed';
  * Version du texte — incrémente quand on modifie la liste pour ré-afficher
  * la barre à tous les utilisateurs qui avaient dismissé l'ancienne.
  */
-const ANNOUNCEMENTS_VERSION = 1;
+const ANNOUNCEMENTS_VERSION = 3;
 
 const ANNOUNCEMENTS = [
-  'Livraison discrète partout en France',
-  'Emballage neutre signé de la main',
-  'Atelier fondé à Paris — Maison du rituel intime',
+  'Avant-première · −15 % sur la 1ère commande à l’ouverture',
+  'Programme ambassadrice ouvert · 10 voix recherchées',
+  'Livraison offerte dès 60 €',
+  'Confection Roubaix · Parfumerie Grasse',
   'Expédié sous 48h depuis l\u2019Union européenne',
 ] as const;
 

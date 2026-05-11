@@ -9,16 +9,16 @@ import { getMockProducts } from '@/lib/mock/products';
 import { getMockArticles } from '@/lib/mock/articles';
 import { sanitizeSearchQuery } from '@/lib/security/sanitize';
 
-/** Suggestions de recherche curées — guident l'utilisateur quand la recherche est vide. */
+/** Suggestions de recherche curées — pivot V2 « Couples 30-50 ». */
 const POPULAR_QUERIES: readonly { label: string; query: string }[] = [
-  { label: 'Silicone médical', query: 'silicone' },
-  { label: 'Premier Frisson', query: 'premier frisson' },
-  { label: 'Collection NUIT', query: 'nuit' },
-  { label: 'Rituel lent', query: 'rituel' },
-  { label: 'Couple', query: 'couple' },
-  { label: 'Ménopause', query: 'menopause' },
-  { label: 'Vibration douce', query: 'vibration' },
-  { label: 'Lubrifiant', query: 'lubrifiant' },
+  { label: 'Pour Vous Deux', query: 'couple' },
+  { label: 'Soie 22 momme', query: 'soie' },
+  { label: 'Coffret Saint-Valentin', query: 'saint-valentin' },
+  { label: 'Bougie de massage', query: 'bougie' },
+  { label: 'Lubrifiant base eau', query: 'lubrifiant' },
+  { label: 'Dentelle Caudry', query: 'dentelle' },
+  { label: 'Lingerie premium', query: 'lingerie' },
+  { label: 'Cadeau anniversaire', query: 'cadeau' },
 ] as const;
 
 export const metadata: Metadata = {

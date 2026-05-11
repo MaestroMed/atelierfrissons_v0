@@ -1,14 +1,16 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Atelier Frisson — Maison du rituel intime';
+export const alt = 'Atelier Frisson — Pour vous deux, pour elle, pour lui';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 /**
- * Open Graph image dynamique — générée à chaque build via next/og.
- * Split visuel JOUR/NUIT avec wordmark or centré, tagline italique.
+ * Open Graph image dynamique — pivot V2 « Couples 30-50 ».
+ * Trois panneaux audience (Elle / Vous Deux / Lui) avec wordmark or centré.
+ *
  * Utilisée par défaut sur toutes les pages qui n'override pas leur OG image.
+ * Format Twitter / Facebook / LinkedIn 1200×630.
  */
 export default async function Image() {
   return new ImageResponse(
@@ -21,36 +23,37 @@ export default async function Image() {
         position: 'relative',
       }}
     >
-      {/* Split JOUR */}
+      {/* Panel Pour Elle (gauche) */}
       <div
         style={{
           display: 'flex',
-          width: '50%',
+          width: '28%',
           height: '100%',
           background: '#F2EADF',
           position: 'relative',
+          flexDirection: 'column',
         }}
       >
         <div
           style={{
             position: 'absolute',
-            top: '40px',
-            left: '40px',
+            top: '32px',
+            left: '32px',
             fontFamily: 'serif',
-            fontSize: '18px',
-            letterSpacing: '6px',
+            fontSize: '14px',
+            letterSpacing: '5px',
             color: 'rgba(10,7,6,0.7)',
           }}
         >
-          JOUR
+          POUR ELLE
         </div>
       </div>
 
-      {/* Split NUIT */}
+      {/* Panel Pour Vous Deux (centre, rouge) */}
       <div
         style={{
           display: 'flex',
-          width: '50%',
+          width: '44%',
           height: '100%',
           background: '#8B1424',
           position: 'relative',
@@ -59,15 +62,42 @@ export default async function Image() {
         <div
           style={{
             position: 'absolute',
-            top: '40px',
-            right: '40px',
+            top: '32px',
+            left: '50%',
+            transform: 'translateX(-50%)',
             fontFamily: 'serif',
-            fontSize: '18px',
-            letterSpacing: '6px',
-            color: 'rgba(242,234,223,0.85)',
+            fontSize: '14px',
+            letterSpacing: '5px',
+            color: '#C9A36B',
           }}
         >
-          NUIT
+          POUR VOUS DEUX
+        </div>
+      </div>
+
+      {/* Panel Pour Lui (droite, noir) */}
+      <div
+        style={{
+          display: 'flex',
+          width: '28%',
+          height: '100%',
+          background: '#0A0706',
+          position: 'relative',
+          flexDirection: 'column',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: '32px',
+            right: '32px',
+            fontFamily: 'serif',
+            fontSize: '14px',
+            letterSpacing: '5px',
+            color: 'rgba(201,163,107,0.85)',
+          }}
+        >
+          POUR LUI
         </div>
       </div>
 
@@ -83,11 +113,10 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '20px',
+          gap: '14px',
           textAlign: 'center',
         }}
       >
-        {/* Fleuron haut */}
         <div
           style={{
             display: 'flex',
@@ -97,17 +126,17 @@ export default async function Image() {
             opacity: 0.85,
           }}
         >
-          <span style={{ width: '80px', height: '1px', background: '#C9A36B' }} />
+          <span style={{ width: '70px', height: '1px', background: '#C9A36B' }} />
           <span style={{ fontSize: '12px' }}>◆</span>
-          <span style={{ width: '80px', height: '1px', background: '#C9A36B' }} />
+          <span style={{ width: '70px', height: '1px', background: '#C9A36B' }} />
         </div>
 
         <div
           style={{
             fontFamily: 'serif',
-            fontSize: '110px',
+            fontSize: '96px',
             fontWeight: 600,
-            letterSpacing: '8px',
+            letterSpacing: '6px',
             color: '#C9A36B',
             textShadow: '0 2px 20px rgba(10,7,6,0.4)',
             lineHeight: 1,
@@ -123,37 +152,36 @@ export default async function Image() {
           style={{
             fontFamily: 'serif',
             fontStyle: 'italic',
-            fontSize: '26px',
+            fontSize: '24px',
             color: '#C9A36B',
-            marginTop: '16px',
+            marginTop: '12px',
           }}
         >
-          Pour tous les rituels. Pour tous les moments.
+          Le rituel intime à deux.
         </div>
 
-        {/* Fleuron bas */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             color: '#C9A36B',
-            opacity: 0.6,
-            marginTop: '24px',
+            opacity: 0.5,
+            marginTop: '20px',
           }}
         >
-          <span style={{ width: '60px', height: '1px', background: '#C9A36B' }} />
+          <span style={{ width: '50px', height: '1px', background: '#C9A36B' }} />
           <span style={{ fontSize: '10px' }}>◆</span>
-          <span style={{ width: '60px', height: '1px', background: '#C9A36B' }} />
+          <span style={{ width: '50px', height: '1px', background: '#C9A36B' }} />
         </div>
 
         <div
           style={{
-            fontSize: '14px',
+            fontSize: '12px',
             letterSpacing: '4px',
             color: '#C9A36B',
             opacity: 0.7,
-            marginTop: '8px',
+            marginTop: '6px',
           }}
         >
           MAISON DU RITUEL INTIME · PARIS

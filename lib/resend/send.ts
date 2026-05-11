@@ -10,6 +10,22 @@ import {
   NewsletterConfirmEmail,
   type NewsletterConfirmEmailProps,
 } from '@/emails/NewsletterConfirmEmail';
+import {
+  WaitlistWelcomeEmail,
+  type WaitlistWelcomeEmailProps,
+} from '@/emails/WaitlistWelcomeEmail';
+import {
+  AmbassadorAcknowledgmentEmail,
+  type AmbassadorAcknowledgmentEmailProps,
+} from '@/emails/AmbassadorAcknowledgmentEmail';
+import {
+  GdprErasureConfirmEmail,
+  type GdprErasureConfirmEmailProps,
+} from '@/emails/GdprErasureConfirmEmail';
+import {
+  GdprDataExportReadyEmail,
+  type GdprDataExportReadyEmailProps,
+} from '@/emails/GdprDataExportReadyEmail';
 
 /**
  * Wrappers Resend pour chaque template — server-only, gracieux si pas de clé.
@@ -64,6 +80,71 @@ export async function sendNewsletterConfirmation(
     subject: 'Confirmez votre inscription à notre correspondance',
     html,
     text,
+  });
+}
+
+/** Email envoyé après confirmation Double Opt-In si source = waitlist*. */
+export async function sendWaitlistWelcome(
+  to: string,
+  props: WaitlistWelcomeEmailProps,
+): Promise<SendResult> {
+  const html = await render(WaitlistWelcomeEmail(props));
+  const text = await render(WaitlistWelcomeEmail(props), { plainText: true });
+  return sendRaw({
+    to,
+    subject: 'Vous êtes sur la liste avant-première Atelier Frisson',
+    html,
+    text,
+  });
+}
+
+/** Accusé de réception candidature ambassadrice. */
+export async function sendAmbassadorAcknowledgment(
+  to: string,
+  props: AmbassadorAcknowledgmentEmailProps,
+): Promise<SendResult> {
+  const html = await render(AmbassadorAcknowledgmentEmail(props));
+  const text = await render(AmbassadorAcknowledgmentEmail(props), {
+    plainText: true,
+  });
+  return sendRaw({
+    to,
+    subject: 'Votre candidature ambassadrice — Atelier Frisson',
+    html,
+    text,
+    replyTo: 'presse@atelierfrisson.fr',
+  });
+}
+
+/** Confirmation de demande d'effacement RGPD avec lien d'annulation. */
+export async function sendGdprErasureConfirm(
+  to: string,
+  props: GdprErasureConfirmEmailProps,
+): Promise<SendResult> {
+  const html = await render(GdprErasureConfirmEmail(props));
+  const text = await render(GdprErasureConfirmEmail(props), { plainText: true });
+  return sendRaw({
+    to,
+    subject: "Confirmation de demande d'effacement — Atelier Frisson",
+    html,
+    text,
+    replyTo: 'dpo@atelierfrisson.fr',
+  });
+}
+
+/** Notification que l'export DSAR est prêt à télécharger. */
+export async function sendGdprDataExportReady(
+  to: string,
+  props: GdprDataExportReadyEmailProps,
+): Promise<SendResult> {
+  const html = await render(GdprDataExportReadyEmail(props));
+  const text = await render(GdprDataExportReadyEmail(props), { plainText: true });
+  return sendRaw({
+    to,
+    subject: 'Votre export RGPD est prêt — Atelier Frisson',
+    html,
+    text,
+    replyTo: 'dpo@atelierfrisson.fr',
   });
 }
 

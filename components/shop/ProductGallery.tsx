@@ -15,7 +15,16 @@ interface GalleryImage {
 
 interface ProductGalleryProps {
   images: readonly GalleryImage[];
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   productSlug: string;
   className?: string;
 }

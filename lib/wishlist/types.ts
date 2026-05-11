@@ -8,7 +8,16 @@ export interface WishlistItem {
   priceCents: number;
   imageUrl: string | null;
   imageAlt: string | null;
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   /** Timestamp epoch ms — tri par ajout récent. */
   addedAt: number;
 }

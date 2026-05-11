@@ -148,8 +148,31 @@ export const products = pgTable(
     videoPosterUrl: text('video_poster_url'),
 
     categoryId: uuid('category_id').references(() => categories.id),
-    /** 'jour' | 'nuit' | 'inaugurale' | 'signature' — capsules éditoriales */
-    collection: text('collection', { enum: ['jour', 'nuit', 'inaugurale', 'signature'] }),
+    /**
+     * Audience cible (pivot V2 « Couples 30-50 ») + capsules éditoriales legacy.
+     *
+     * Pivot (audience marketing) :
+     *   - 'couples' : Pour Vous Deux
+     *   - 'elle'    : Pour Elle
+     *   - 'lui'     : Pour Lui
+     *   - 'cadeaux' : Cadeaux saisonniers (Saint-Valentin, anniv, EVJF…)
+     *
+     * Legacy (capsules éditoriales pre-pivot — gardées pour back-compat,
+     * peuvent encore alimenter des bandeaux mais ne pilotent plus la nav) :
+     *   - 'jour' | 'nuit' | 'inaugurale' | 'signature'
+     */
+    collection: text('collection', {
+      enum: [
+        'couples',
+        'elle',
+        'lui',
+        'cadeaux',
+        'jour',
+        'nuit',
+        'inaugurale',
+        'signature',
+      ],
+    }),
     tags: jsonb('tags').$type<string[]>().default([]).notNull(),
 
     supplierId: uuid('supplier_id'),

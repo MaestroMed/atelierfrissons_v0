@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Check, Plus, X, AlertCircle } from 'lucide-react';
@@ -14,7 +15,28 @@ import {
   STOCK_STATUS_OPTIONS,
 } from '@/lib/admin/products/schema';
 import { updateProductAction } from '@/lib/admin/products/actions';
-import { RichTextEditor } from './RichTextEditor';
+
+/**
+ * RichTextEditor lazy-loaded — TipTap StarterKit pèse ~200 KB minified.
+ * Code-splitting évite de charger ces 200 KB dans le bundle initial admin.
+ * Skeleton shown while loading (~150ms).
+ */
+const RichTextEditor = dynamic(
+  () => import('./RichTextEditor').then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        aria-label="Chargement de l'éditeur"
+        className="border-encre/15 bg-ivoire-light/50 flex h-[200px] animate-pulse items-center justify-center border"
+      >
+        <span className="text-encre/40 ui-caps text-[10px] tracking-widest">
+          Éditeur…
+        </span>
+      </div>
+    ),
+  },
+);
 
 interface ProductEditFormProps {
   initial: ProductEditInput;
@@ -171,13 +193,30 @@ export function ProductEditForm({ initial }: ProductEditFormProps) {
               ))}
             </select>
           </Field>
-          <Field label="Collection">
+          <Field
+            label="Audience / collection"
+            hint="Pivot V2 (Pour Vous Deux, Elle, Lui, Cadeaux) — capsules legacy en archive"
+          >
             <select {...register('collection')} className={fieldInputClass}>
-              {COLLECTION_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
+              <option value="">— Aucune —</option>
+              <optgroup label="Pivot V2 — Audiences pivot">
+                {COLLECTION_OPTIONS.filter(
+                  (o) => 'group' in o && o.group === 'Pivot V2',
+                ).map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Legacy — Capsules historiques">
+                {COLLECTION_OPTIONS.filter(
+                  (o) => 'group' in o && o.group === 'Capsules legacy',
+                ).map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </Field>
           <Field label="Sélection signature" hint="Mis en avant sur la home">

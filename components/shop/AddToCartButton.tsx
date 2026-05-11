@@ -10,7 +10,16 @@ import { QuantitySelector } from './QuantitySelector';
 interface AddToCartButtonProps {
   slug: string;
   productName: string;
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   /** Affiche le sélecteur de quantité au-dessus du bouton (fiche produit). */
   showQuantity?: boolean;
   /** Ouvre automatiquement le drawer panier après ajout. */

@@ -36,21 +36,42 @@ export function buildProductSchema(
     '@type': 'Product',
     name: product.name,
     description: product.descriptionShort,
-    sku: product.id,
-    mpn: product.id,
+    sku: product.supplierSku ?? product.id,
+    mpn: product.supplierSku ?? product.id,
+    productID: `atelier-frisson-${product.slug}`,
     brand: {
       '@type': 'Brand',
       name: ORGANIZATION_NAME,
       logo: `${SITE_URL}/logo.png`,
     },
-    category: 'Wellness intime',
-    image: product.images.map((img) => `${SITE_URL}${img.url}`),
+    category: collectionToSchemaCategory(product.collection),
+    audience: collectionToAudience(product.collection),
+    image: [
+      // OG portrait Pinterest en priorité (Pinterest Rich Pin la consomme)
+      `${SITE_URL}/api/og/pin/${product.slug}?type=product`,
+      ...product.images.map((img) => `${SITE_URL}${img.url}`),
+    ],
+    keywords: product.seoKeywords?.join(', ') ?? undefined,
     offers: {
       '@type': 'Offer',
       url: `${SITE_URL}/produit/${product.slug}`,
       priceCurrency: product.currency,
       price: (product.priceCents / 100).toFixed(2),
       priceValidUntil,
+      ...(product.compareAtPriceCents
+        ? {
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              price: (product.priceCents / 100).toFixed(2),
+              priceCurrency: product.currency,
+              referencePrice: {
+                '@type': 'PriceSpecification',
+                price: (product.compareAtPriceCents / 100).toFixed(2),
+                priceCurrency: product.currency,
+              },
+            },
+          }
+        : {}),
       availability:
         product.stockStatus === 'in_stock' || product.stockStatus === 'low_stock'
           ? 'https://schema.org/InStock'
@@ -112,6 +133,64 @@ export function buildProductSchema(
       value,
     })),
   };
+}
+
+/**
+ * Mapping `Product.collection` → audience SEO Schema.org.
+ *
+ * Pour le pivot V2 « Couples 30-50 », ces valeurs aident Google à
+ * comprendre le ciblage et à mieux indexer dans les bonnes catégories.
+ */
+function collectionToAudience(
+  collection: Product['collection'],
+): Record<string, unknown> | undefined {
+  switch (collection) {
+    case 'couples':
+      return {
+        '@type': 'PeopleAudience',
+        audienceType: 'Couples',
+        suggestedMinAge: 30,
+        suggestedMaxAge: 50,
+      };
+    case 'elle':
+      return {
+        '@type': 'PeopleAudience',
+        audienceType: 'Women',
+        suggestedGender: 'Female',
+        suggestedMinAge: 30,
+        suggestedMaxAge: 50,
+      };
+    case 'lui':
+      return {
+        '@type': 'PeopleAudience',
+        audienceType: 'Men',
+        suggestedGender: 'Male',
+        suggestedMinAge: 30,
+        suggestedMaxAge: 50,
+      };
+    case 'cadeaux':
+      return {
+        '@type': 'PeopleAudience',
+        audienceType: 'Gift Giving',
+      };
+    default:
+      return undefined;
+  }
+}
+
+function collectionToSchemaCategory(collection: Product['collection']): string {
+  switch (collection) {
+    case 'couples':
+      return 'Health & Beauty > Personal Care > Couples Wellness';
+    case 'elle':
+      return "Health & Beauty > Personal Care > Women's Wellness";
+    case 'lui':
+      return "Health & Beauty > Personal Care > Men's Wellness";
+    case 'cadeaux':
+      return 'Apparel & Accessories > Clothing > Gift Sets';
+    default:
+      return 'Health & Beauty > Personal Care';
+  }
 }
 
 export function buildBreadcrumbSchema(

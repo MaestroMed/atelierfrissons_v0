@@ -7,7 +7,7 @@ import { Wordmark } from '@/components/layout/Wordmark';
 import { verifyDoiToken } from '@/lib/auth/doi-token';
 import { createSupabaseAdminClient } from '@/lib/supabase/admin';
 import { subscribeToList, trackEvent } from '@/lib/klaviyo/track';
-import { sendWelcome } from '@/lib/resend/send';
+import { sendWelcome, sendWaitlistWelcome } from '@/lib/resend/send';
 
 export const metadata: Metadata = {
   title: 'Confirmation inscription',
@@ -120,11 +120,27 @@ async function processToken(token: string | undefined, source: string): Promise<
     }
 
     try {
-      const firstName = email.split('@')[0]?.split(/[._-]/)[0] ?? 'vous';
-      await sendWelcome(email, {
-        customerFirstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
-        shopUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://atelierfrisson.fr'}/boutique`,
-      });
+      const firstName = (email.split('@')[0]?.split(/[._-]/)[0] ?? 'vous').replace(/^./, (c) =>
+        c.toUpperCase(),
+      );
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://atelierfrisson.fr';
+
+      // Source-aware : si l'inscription vient de la waitlist, on envoie un
+      // email dédié pivot V2 (annonce ouverture + −15 % à venir) plutôt que
+      // le welcome générique.
+      const isWaitlist = source.startsWith('waitlist');
+      if (isWaitlist) {
+        await sendWaitlistWelcome(email, {
+          firstName,
+          estimatedLaunchMonth: 'juin 2026',
+          preferenceUrl: `${appUrl}/compte/preferences`,
+        });
+      } else {
+        await sendWelcome(email, {
+          customerFirstName: firstName,
+          shopUrl: `${appUrl}/boutique`,
+        });
+      }
     } catch (err) {
       console.error('[confirm-subscribe] Welcome email exception:', err);
     }

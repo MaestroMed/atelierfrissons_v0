@@ -63,6 +63,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const product = getMockProductBySlug(slug);
   if (!product) return {};
+
+  const priceEur = (product.priceCents / 100).toFixed(2);
+  const compareEur =
+    product.compareAtPriceCents != null
+      ? (product.compareAtPriceCents / 100).toFixed(2)
+      : null;
+  const availability =
+    product.stockStatus === 'in_stock'
+      ? 'in stock'
+      : product.stockStatus === 'low_stock'
+        ? 'in stock'
+        : product.stockStatus === 'preorder'
+          ? 'preorder'
+          : 'out of stock';
+
   return {
     title: product.seoTitle ?? product.name,
     description: product.seoDescription ?? product.descriptionShort,
@@ -73,12 +88,43 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: product.seoTitle ?? product.name,
       description: product.seoDescription ?? product.descriptionShort,
       url: `/produit/${product.slug}`,
-      images: product.images.map((img) => ({
-        url: img.url,
-        width: img.width,
-        height: img.height,
-        alt: img.alt,
-      })),
+      images: [
+        // Pinterest portrait OG en priorité (1000×1500) pour Rich Pins
+        {
+          url: `/api/og/pin/${product.slug}?type=product`,
+          width: 1000,
+          height: 1500,
+          alt: `${product.name} — ${product.tagline ?? 'Atelier Frisson'}`,
+        },
+        // Photos produit standard
+        ...product.images.map((img) => ({
+          url: img.url,
+          width: img.width,
+          height: img.height,
+          alt: img.alt,
+        })),
+      ],
+    },
+    /**
+     * Pinterest Rich Pins (Product) — meta tags Open Graph étendus.
+     * Pinterest, Meta et autres scrapers reconnaissent ces tags pour afficher
+     * prix, disponibilité, marque directement dans le pin.
+     * Cf. https://help.pinterest.com/business/article/rich-pins
+     */
+    other: {
+      'og:type': 'product',
+      'product:price:amount': priceEur,
+      'product:price:currency': 'EUR',
+      'product:availability': availability,
+      'product:condition': 'new',
+      'product:retailer_item_id': product.supplierSku ?? product.slug,
+      'product:brand': 'Atelier Frisson',
+      ...(compareEur
+        ? {
+            'product:original_price:amount': compareEur,
+            'product:original_price:currency': 'EUR',
+          }
+        : {}),
     },
   };
 }
@@ -123,13 +169,8 @@ export default async function ProductPage({ params }: PageProps) {
         caption={`${collectionLabel(product.collection)}${product.isFeatured ? ' · Pièce signature' : ''}`}
         name={product.name}
         tagline={product.tagline}
-        ambientWord={
-          product.collection === 'jour'
-            ? 'JOUR'
-            : product.collection === 'nuit'
-              ? 'NUIT'
-              : undefined
-        }
+        slug={product.slug}
+        ambientWord={ambientWordFor(product.collection)}
         rating={
           reviewSummary
             ? { average: reviewSummary.averageRating, count: reviewSummary.count }
@@ -390,8 +431,35 @@ export default async function ProductPage({ params }: PageProps) {
   );
 }
 
+function ambientWordFor(collection: string | null): string | undefined {
+  switch (collection) {
+    case 'couples':
+      return 'DEUX';
+    case 'elle':
+      return 'ELLE';
+    case 'lui':
+      return 'LUI';
+    case 'cadeaux':
+      return 'OFFRIR';
+    case 'jour':
+      return 'JOUR';
+    case 'nuit':
+      return 'NUIT';
+    default:
+      return undefined;
+  }
+}
+
 function collectionLabel(collection: string | null): string {
   switch (collection) {
+    case 'couples':
+      return 'Pour Vous Deux';
+    case 'elle':
+      return 'Pour Elle';
+    case 'lui':
+      return 'Pour Lui';
+    case 'cadeaux':
+      return 'Cadeau';
     case 'jour':
       return 'Collection JOUR';
     case 'nuit':

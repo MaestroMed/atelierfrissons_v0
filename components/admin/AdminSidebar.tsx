@@ -23,6 +23,10 @@ import {
   ShieldCheck,
   ScrollText,
   LogOut,
+  Repeat,
+  Gift,
+  UserPlus,
+  Activity,
 } from 'lucide-react';
 import { Wordmark } from '@/components/layout/Wordmark';
 import { Fleuron } from '@/components/layout/Fleuron';
@@ -49,8 +53,16 @@ const NAV_GROUPS = [
     title: 'Activité',
     items: [
       { label: 'Commandes', href: '/admin/commandes', icon: ShoppingBag, exact: false },
+      { label: 'Abonnements', href: '/admin/abonnements', icon: Repeat, exact: false },
       { label: 'Clients', href: '/admin/clients', icon: Users, exact: false },
       { label: 'Avis', href: '/admin/avis', icon: Star, exact: false },
+    ],
+  },
+  {
+    title: 'Pivot V2 — Croissance',
+    items: [
+      { label: 'Cartes cadeaux', href: '/admin/cartes-cadeaux', icon: Gift, exact: false },
+      { label: 'Parrainage', href: '/admin/parrainage', icon: UserPlus, exact: false },
     ],
   },
   {
@@ -75,6 +87,7 @@ const NAV_GROUPS = [
     items: [
       { label: 'Paramètres', href: '/admin/parametres', icon: Settings, exact: false },
       { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: ShieldCheck, exact: false },
+      { label: 'Observabilité', href: '/admin/observabilite', icon: Activity, exact: false },
       { label: 'Audit log', href: '/admin/audit', icon: ScrollText, exact: false },
     ],
   },

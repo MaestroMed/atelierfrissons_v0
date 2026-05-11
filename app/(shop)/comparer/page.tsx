@@ -28,16 +28,30 @@ interface PageProps {
 
 /** Attributs de spec qu'on veut afficher si présents, dans cet ordre. */
 const SPEC_KEYS: readonly string[] = [
+  'Matériau',
   'Matière',
   'Matiere',
+  'Dimensions',
   'Hauteur',
   'Largeur',
   'Poids',
   'Autonomie',
+  'Recharge',
   'Charge',
-  'Certifications',
+  'Étanchéité',
+  'Etancheite',
+  'Niveau sonore',
   'Niveau',
   'Silence',
+  'Modes',
+  'Connectivité',
+  'Application',
+  'Compatibilité',
+  'Volume',
+  'Tailles',
+  'Confection',
+  'Inclus',
+  'Made',
   'Garantie',
 ];
 
@@ -336,17 +350,23 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 // ── Product header cell ───────────────────────────────────────────────
 function ProductHeader({ product }: { product: Product }) {
-  const isNuit = product.collection === 'nuit';
+  const isDark = product.collection === 'lui' || product.collection === 'nuit';
+  const isRouge = product.collection === 'couples';
+  const tileBg = isRouge
+    ? 'border-or/30 bg-rouge'
+    : isDark
+      ? 'border-or/30 bg-noir'
+      : 'border-or/15 bg-ivoire';
   return (
     <div className="flex min-w-[220px] flex-col gap-3">
       <Link
         href={`/produit/${product.slug}`}
-        className={cn(
-          'flex aspect-[4/5] items-center justify-center overflow-hidden border',
-          isNuit ? 'border-or/30 bg-rouge' : 'border-or/15 bg-ivoire',
-        )}
+        className={cn('flex aspect-[4/5] items-center justify-center overflow-hidden border', tileBg)}
       >
-        <ProductSilhouette variant={isNuit ? 'nuit' : 'jour'} className="h-[78%]" />
+        <ProductSilhouette
+          variant={isDark || isRouge ? 'nuit' : 'jour'}
+          className="h-[78%]"
+        />
       </Link>
       <div className="flex flex-col gap-1">
         <Link

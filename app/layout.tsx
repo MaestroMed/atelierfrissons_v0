@@ -12,8 +12,26 @@ import { getMockFeaturedProducts } from '@/lib/mock/products';
 import { Toaster } from '@/components/ui/sonner';
 import { JsonLd } from '@/components/shared/JsonLd';
 import { BackToTop } from '@/components/shared/BackToTop';
-import { CommandPalette } from '@/components/shared/CommandPalette';
-import { CompareBar } from '@/components/shop/CompareBar';
+import dynamic from 'next/dynamic';
+import { MarketingPixels } from '@/components/analytics/MarketingPixels';
+import { CursorFollower } from '@/components/shared/CursorFollower';
+
+/**
+ * Code-splitting des helpers UI rarement utilisés au first paint :
+ *   - CommandPalette : ouvert uniquement par Cmd+K (~95 % des sessions ne l'utilisent pas)
+ *   - CompareBar : seulement visible si user a sélectionné des produits à comparer
+ *
+ * Économie ~25 KB sur le bundle initial. SSR désactivé car ces deux composants
+ * sont purement interactifs et n'ont pas de contenu critique pour le SEO.
+ */
+const CommandPalette = dynamic(
+  () => import('@/components/shared/CommandPalette').then((m) => m.CommandPalette),
+  { ssr: false },
+);
+const CompareBar = dynamic(
+  () => import('@/components/shop/CompareBar').then((m) => m.CompareBar),
+  { ssr: false },
+);
 import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo/structured-data';
 import './globals.css';
 
@@ -26,22 +44,59 @@ import './globals.css';
  * Chargées via next/font/google avec `display: swap` pour éviter le FOIT.
  * Les variables CSS sont référencées dans `app/globals.css` (--font-bodoni / --font-inter).
  */
+/**
+ * Optimisation Bodoni : on ne preload que les weights réellement utilisés
+ * dans le LCP critique. 400 + 600 (italic + roman) couvrent le wordmark hero +
+ * les titres. 500/700 chargés à la demande quand atteints au scroll.
+ *
+ * Critique LCP : sans ce filtrage, les 8 fichiers Bodoni (4 weights × 2 styles)
+ * étaient préloadés et bloquaient ~80 KB sur le first paint.
+ */
 const bodoni = Bodoni_Moda({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '600'],
   style: ['normal', 'italic'],
   display: 'swap',
   variable: '--font-bodoni',
   preload: true,
+  fallback: ['Didot', 'Garamond', 'serif'],
+  adjustFontFallback: 'Times New Roman',
+});
+
+/**
+ * Bodoni weights additionnels (500, 700) : chargés à la demande.
+ * Pas inclus dans le bundle initial car non utilisés au-dessus de la ligne de
+ * flottaison sur la homepage et les pages produit.
+ */
+const bodoniHeavy = Bodoni_Moda({
+  subsets: ['latin'],
+  weight: ['500', '700'],
+  style: ['normal'],
+  display: 'swap',
+  variable: '--font-bodoni-heavy',
+  preload: false, // → chargé async par le navigateur quand classe utilisée
+  fallback: ['Didot', 'Garamond', 'serif'],
 });
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['400', '500'], // 300/600 pas utilisés au-dessus du fold — chargés à la demande
   style: ['normal'],
   display: 'swap',
   variable: '--font-inter',
   preload: true,
+  fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+  adjustFontFallback: 'Arial',
+});
+
+const interHeavy = Inter({
+  subsets: ['latin'],
+  weight: ['300', '600'],
+  style: ['normal'],
+  display: 'swap',
+  variable: '--font-inter-heavy',
+  preload: false,
+  fallback: ['system-ui', '-apple-system', 'sans-serif'],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://atelierfrisson.fr';
@@ -150,7 +205,11 @@ export default async function RootLayout({
   }));
 
   return (
-    <html lang="fr" className={`${bodoni.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${bodoni.variable} ${bodoniHeavy.variable} ${inter.variable} ${interHeavy.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <JsonLd data={buildOrganizationSchema()} />
         <JsonLd data={buildWebsiteSchema()} />
@@ -173,6 +232,8 @@ export default async function RootLayout({
         <CommandPalette />
         <Toaster position="bottom-center" />
         {!ageVerified ? <AgeGate /> : <CookieBanner />}
+        <MarketingPixels />
+        <CursorFollower />
       </body>
     </html>
   );

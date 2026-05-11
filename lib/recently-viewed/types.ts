@@ -7,7 +7,16 @@ export interface RecentlyViewedItem {
   priceCents: number;
   imageUrl: string | null;
   imageAlt: string | null;
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
   viewedAt: number;
 }
 

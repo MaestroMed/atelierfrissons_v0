@@ -3,9 +3,20 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { MegaMenuConfig } from './navigation-data';
+import type { MegaMenuConfig, MegaMenuProductPreview } from './navigation-data';
 import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
 import { formatPriceCents } from '@/lib/format';
+
+const MEGA_COLLECTION_LABELS: Record<MegaMenuProductPreview['collection'], string> = {
+  couples: 'Pour Vous Deux',
+  elle: 'Pour Elle',
+  lui: 'Pour Lui',
+  cadeaux: 'Cadeau',
+  jour: 'Collection JOUR',
+  nuit: 'Collection NUIT',
+  inaugurale: 'Collection inaugurale',
+  signature: 'Pièce signature',
+};
 
 interface MegaMenuProps {
   config: MegaMenuConfig;
@@ -124,36 +135,30 @@ export function MegaMenu({ config, open, id, onClose, onMouseEnter, onMouseLeave
               <p className="ui-caps text-or-dark">À l’honneur</p>
               <ul className="flex flex-col gap-3">
                 {products.map((p) => {
-                  const isNuit = p.collection === 'nuit';
+                  const isDark = p.collection === 'lui' || p.collection === 'nuit';
+                  const collectionLabel = MEGA_COLLECTION_LABELS[p.collection];
                   return (
                     <li key={p.slug}>
                       <Link
                         href={`/produit/${p.slug}`}
                         role="menuitem"
                         onClick={onClose}
-                        className={cn(
-                          'group/prod border-encre/10 bg-ivoire hover:border-or flex items-center gap-3 border p-3 transition-colors',
-                        )}
+                        className="group/prod border-encre/10 bg-ivoire hover:border-or flex items-center gap-3 border p-3 transition-colors"
                       >
                         <span
                           className={cn(
                             'flex size-14 shrink-0 items-center justify-center overflow-hidden border',
-                            isNuit ? 'bg-rouge border-or/30' : 'bg-ivoire-light border-or/15',
+                            isDark ? 'bg-noir border-or/30' : 'bg-ivoire-light border-or/15',
                           )}
                         >
                           <ProductSilhouette
-                            variant={isNuit ? 'nuit' : 'jour'}
+                            variant={isDark ? 'nuit' : 'jour'}
                             className="h-[70%]"
                           />
                         </span>
                         <div className="flex min-w-0 flex-1 flex-col">
-                          <span
-                            className={cn(
-                              'ui-caps text-[10px]',
-                              isNuit ? 'text-or-dark' : 'text-or-dark',
-                            )}
-                          >
-                            Collection {p.collection.toUpperCase()}
+                          <span className="ui-caps text-or-dark text-[10px]">
+                            {collectionLabel}
                           </span>
                           <span className="font-display text-noir group-hover/prod:text-or-dark truncate text-base font-medium transition-colors">
                             {p.name}

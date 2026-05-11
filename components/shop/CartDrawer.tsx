@@ -20,7 +20,16 @@ export interface CartUpsellCandidate {
   name: string;
   tagline: string | null;
   priceCents: number;
-  collection: 'jour' | 'nuit' | 'inaugurale' | 'signature' | null;
+  collection:
+    | 'couples'
+    | 'elle'
+    | 'lui'
+    | 'cadeaux'
+    | 'jour'
+    | 'nuit'
+    | 'inaugurale'
+    | 'signature'
+    | null;
 }
 
 interface CartDrawerProps {
@@ -90,7 +99,7 @@ export function CartDrawer({ initialSnapshot, upsellCandidates = [] }: CartDrawe
     >
       <SheetContent
         side="right"
-        className="border-encre/10 bg-ivoire-light text-encre w-full border-l sm:max-w-md md:max-w-lg"
+        className="glass-medium text-encre border-encre/10 w-full border-l sm:max-w-md md:max-w-lg"
       >
         <div className="flex h-full flex-col">
           <header className="border-encre/10 flex flex-col items-center gap-3 border-b px-6 pt-10 pb-5 text-center">
@@ -249,7 +258,8 @@ function EmptyState() {
 
 function UpsellCard({ item, onAdded }: { item: CartUpsellCandidate; onAdded: () => void }) {
   const [pending, startTransition] = useTransition();
-  const isNuit = item.collection === 'nuit';
+  const isDark = item.collection === 'lui' || item.collection === 'nuit';
+  const isRouge = item.collection === 'couples';
 
   const handleAdd = () => {
     startTransition(async () => {
@@ -274,11 +284,15 @@ function UpsellCard({ item, onAdded }: { item: CartUpsellCandidate; onAdded: () 
         href={`/produit/${item.slug}`}
         className={cn(
           'flex size-14 shrink-0 items-center justify-center overflow-hidden border',
-          isNuit ? 'border-or/30 bg-rouge' : 'border-or/20 bg-ivoire-light',
+          isRouge
+            ? 'border-or/30 bg-rouge'
+            : isDark
+              ? 'border-or/30 bg-noir'
+              : 'border-or/20 bg-ivoire-light',
         )}
         aria-label={`Voir ${item.name}`}
       >
-        <ProductSilhouette variant={isNuit ? 'nuit' : 'jour'} className="h-[70%]" />
+        <ProductSilhouette variant={isDark || isRouge ? 'nuit' : 'jour'} className="h-[70%]" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <Link

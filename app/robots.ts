@@ -36,8 +36,14 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: 'Google-Extended', disallow: '/' },
       { userAgent: 'anthropic-ai', disallow: '/' },
       { userAgent: 'PerplexityBot', disallow: '/' },
+      // Pinterest crawler — autorisé partout (sauf espaces sensibles via wildcard)
+      {
+        userAgent: 'Pinterestbot',
+        allow: '/',
+        disallow: ['/api/', '/admin/', '/compte/', '/auth/', '/checkout/'],
+      },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/sitemap-images.xml`],
     host: SITE_URL,
   };
 }

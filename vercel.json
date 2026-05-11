@@ -1,0 +1,43 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/process-subscriptions",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/abandoned-carts",
+      "schedule": "0 */4 * * *"
+    },
+    {
+      "path": "/api/cron/sync-products",
+      "schedule": "0 4 * * *"
+    }
+  ],
+  "functions": {
+    "app/api/og/pin/[slug]/route.tsx": {
+      "memory": 256,
+      "maxDuration": 10
+    },
+    "app/api/webhooks/ccbill/route.ts": {
+      "memory": 256,
+      "maxDuration": 30
+    },
+    "app/api/webhooks/stripe/route.ts": {
+      "memory": 256,
+      "maxDuration": 30
+    },
+    "app/api/webhooks/verotel/route.ts": {
+      "memory": 256,
+      "maxDuration": 30
+    },
+    "app/api/cron/process-subscriptions/route.ts": {
+      "memory": 1024,
+      "maxDuration": 300
+    },
+    "app/api/cron/abandoned-carts/route.ts": {
+      "memory": 512,
+      "maxDuration": 120
+    }
+  }
+}
