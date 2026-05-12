@@ -200,29 +200,35 @@ export default function HomePage() {
           </ScrollReveal>
 
           <ul className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-            {featured.map((p, i) => (
-              <ScrollReveal key={p.slug} delay={i * 90} as="div">
-                <li>
-                  <ProductCardPreview
-                    product={{
-                      slug: p.slug,
-                      name: p.name,
-                      tagline: p.tagline ?? '',
-                      priceCents: p.priceCents,
-                      compareAtPriceCents: p.compareAtPriceCents,
-                      collection: p.collection ?? 'couples',
-                      ...(p.tags.includes('best-seller')
-                        ? { badge: 'Best-seller' }
-                        : p.stockStatus === 'low_stock'
-                          ? { badge: 'Stock limité' }
-                          : p.tags.includes('signature')
-                            ? { badge: 'Signature' }
-                            : {}),
-                    }}
-                  />
-                </li>
-              </ScrollReveal>
-            ))}
+            {featured.map((p, i) => {
+              const hero = p.images[0];
+              return (
+                <ScrollReveal key={p.slug} delay={i * 90} as="div">
+                  <li>
+                    <ProductCardPreview
+                      priority={i < 2}
+                      product={{
+                        slug: p.slug,
+                        name: p.name,
+                        tagline: p.tagline ?? '',
+                        priceCents: p.priceCents,
+                        compareAtPriceCents: p.compareAtPriceCents,
+                        collection: p.collection ?? 'couples',
+                        imageUrl: hero?.url || null,
+                        imageAlt: hero?.alt ?? `${p.name} — ${p.tagline ?? ''}`,
+                        ...(p.tags.includes('best-seller')
+                          ? { badge: 'Best-seller' }
+                          : p.stockStatus === 'low_stock'
+                            ? { badge: 'Stock limité' }
+                            : p.tags.includes('signature')
+                              ? { badge: 'Signature' }
+                              : {}),
+                      }}
+                    />
+                  </li>
+                </ScrollReveal>
+              );
+            })}
           </ul>
 
           <ScrollReveal delay={180}>

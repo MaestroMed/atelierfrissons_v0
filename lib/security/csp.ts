@@ -53,9 +53,21 @@ export function buildCsp(nonce: string): string {
       'https://*.supabase.in',
       'https://atelierfrisson.fr',
       'https://atelierfrisson.com',
+      // CDN Higgsfield (visuels nano_banana_2 + thumbnails seedance_2_0)
+      // — phase transitoire avant migration Supabase Storage / Mux (Sprint 7).
+      'https://*.cloudfront.net',
+      'https://cdn.higgsfield.ai',
     ],
     'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
-    'media-src': ["'self'", 'blob:', 'https://stream.mux.com', 'https://image.mux.com'],
+    'media-src': [
+      "'self'",
+      'blob:',
+      'https://stream.mux.com',
+      'https://image.mux.com',
+      // Vidéos Higgsfield (seedance_2_0 MP4) — phase transitoire avant Mux.
+      'https://*.cloudfront.net',
+      'https://cdn.higgsfield.ai',
+    ],
     'connect-src': [
       "'self'",
       'https://*.supabase.co',
