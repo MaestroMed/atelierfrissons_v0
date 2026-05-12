@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Gift, Heart, Mars, Venus, VenusAndMars } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Fleuron } from '@/components/layout/Fleuron';
 import { Wordmark } from '@/components/layout/Wordmark';
 import { NewsletterForm } from '@/components/layout/NewsletterForm';
-import { HeroSplit } from '@/components/marketing/HeroSplit';
+import { HeroCinematic } from '@/components/marketing/HeroCinematic';
 import { TrustSignals } from '@/components/marketing/TrustSignals';
 import { Testimonials } from '@/components/marketing/Testimonials';
 import { ProductCardPreview } from '@/components/marketing/ProductCardPreview';
@@ -17,6 +18,7 @@ import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { getMockFeaturedProducts } from '@/lib/mock/products';
 import { getMockFeaturedBundles } from '@/lib/mock/bundles';
 import { formatPriceCents } from '@/lib/format';
+import { HEROS, getAssetUrl } from '@/lib/assets/atelier-frisson-visuals';
 
 export const metadata: Metadata = {
   title: 'Atelier Frisson — Le rituel intime à deux',
@@ -100,11 +102,12 @@ const AUDIENCE_TILES = [
 export default function HomePage() {
   const featured = getMockFeaturedProducts().slice(0, 6);
   const bundles = getMockFeaturedBundles().slice(0, 3);
+  const boxMensuelleUrl = getAssetUrl(HEROS.boxMensuelle);
 
   return (
     <>
-      {/* ═══════ 1. HERO SPLIT pivot Couples / Elle / Lui ═══════ */}
-      <HeroSplit />
+      {/* ═══════ 1. HERO CINEMATIC pivot Couples — full-bleed 21:9 avec vidéo Mux/Seedance + fallback poster ═══════ */}
+      <HeroCinematic />
 
       {/* ═══════ 2. AUDIENCE TILES — quick funnel sous le hero ═══════ */}
       <section
@@ -300,9 +303,23 @@ export default function HomePage() {
 
             <ScrollReveal delay={120} as="div">
               <figure className="border-or/30 relative aspect-[4/5] overflow-hidden border">
-                <div className="bg-rouge/40 absolute inset-0 flex items-center justify-center">
-                  <Fleuron variant="crown" size="lg" color="or" className="opacity-60" />
-                </div>
+                {boxMensuelleUrl ? (
+                  <Image
+                    src={boxMensuelleUrl}
+                    alt={HEROS.boxMensuelle.alt}
+                    fill
+                    sizes="(min-width: 1024px) 45vw, 100vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="bg-rouge/40 absolute inset-0 flex items-center justify-center">
+                    <Fleuron variant="crown" size="lg" color="or" className="opacity-60" />
+                  </div>
+                )}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 [background:linear-gradient(to_top,rgba(10,7,6,0.6)_0%,transparent_45%)]"
+                />
                 <figcaption className="font-italic-editorial text-or absolute bottom-6 left-6 right-6 text-sm">
                   « Box Premium — chapitre n°4, mai 2026. »
                 </figcaption>

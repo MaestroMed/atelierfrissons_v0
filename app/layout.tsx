@@ -12,28 +12,15 @@ import { getMockFeaturedProducts } from '@/lib/mock/products';
 import { Toaster } from '@/components/ui/sonner';
 import { JsonLd } from '@/components/shared/JsonLd';
 import { BackToTop } from '@/components/shared/BackToTop';
-import dynamic from 'next/dynamic';
 import { MarketingPixels } from '@/components/analytics/MarketingPixels';
 import { CursorFollower } from '@/components/shared/CursorFollower';
-
-/**
- * Code-splitting des helpers UI rarement utilisés au first paint :
- *   - CommandPalette : ouvert uniquement par Cmd+K (~95 % des sessions ne l'utilisent pas)
- *   - CompareBar : seulement visible si user a sélectionné des produits à comparer
- *
- * Économie ~25 KB sur le bundle initial. SSR désactivé car ces deux composants
- * sont purement interactifs et n'ont pas de contenu critique pour le SEO.
- */
-const CommandPalette = dynamic(
-  () => import('@/components/shared/CommandPalette').then((m) => m.CommandPalette),
-  { ssr: false },
-);
-const CompareBar = dynamic(
-  () => import('@/components/shop/CompareBar').then((m) => m.CompareBar),
-  { ssr: false },
-);
+import { LayoutClientHelpers } from '@/components/layout/LayoutClientHelpers';
 import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo/structured-data';
 import './globals.css';
+
+// Le code-splitting des CommandPalette / CompareBar (avec `ssr: false`) est
+// délégué au Client Component `<LayoutClientHelpers />` — Next 16 interdit
+// `dynamic({ ssr: false })` dans un Server Component, donc on encapsule.
 
 /**
  * Typographies Atelier Frisson.
@@ -227,9 +214,8 @@ export default async function RootLayout({
         </main>
         <Footer />
         <CartDrawer initialSnapshot={cartSnapshot} upsellCandidates={upsellCandidates} />
-        <CompareBar />
+        <LayoutClientHelpers />
         <BackToTop />
-        <CommandPalette />
         <Toaster position="bottom-center" />
         {!ageVerified ? <AgeGate /> : <CookieBanner />}
         <MarketingPixels />

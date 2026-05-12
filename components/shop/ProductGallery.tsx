@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { ZoomIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
@@ -70,16 +71,31 @@ export function ProductGallery({
           )}
           style={{ viewTransitionName: `product-${productSlug}` }}
         >
-          <ProductSilhouette
-            variant={variant}
-            animationDelayMs={0}
-            className="h-[80%] max-h-[640px] transition-transform duration-500 group-hover/main:scale-[1.02]"
-          />
+          {slides[activeIndex]?.url ? (
+            <Image
+              src={slides[activeIndex].url}
+              alt={slides[activeIndex].alt}
+              fill
+              priority
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover transition-transform duration-500 group-hover/main:scale-[1.02]"
+            />
+          ) : (
+            <ProductSilhouette
+              variant={variant}
+              animationDelayMs={0}
+              className="h-[80%] max-h-[640px] transition-transform duration-500 group-hover/main:scale-[1.02]"
+            />
+          )}
           <span
             aria-hidden="true"
             className={cn(
-              'font-display absolute right-4 bottom-4 text-xs tracking-[0.3em]',
-              isNuit ? 'text-or' : 'text-or-dark',
+              'font-display pointer-events-none absolute right-4 bottom-4 text-xs tracking-[0.3em]',
+              slides[activeIndex]?.url
+                ? 'bg-ivoire/80 supports-backdrop-filter:bg-ivoire/60 text-noir supports-backdrop-filter:backdrop-blur-sm px-2 py-1'
+                : isNuit
+                  ? 'text-or'
+                  : 'text-or-dark',
             )}
           >
             ATELIER FRISSON · AF
@@ -117,7 +133,17 @@ export function ProductGallery({
                     isNuit ? 'bg-rouge/30' : 'bg-ivoire-dark/40',
                   )}
                 >
-                  <ProductSilhouette variant={variant} animationDelayMs={0} className="h-[75%]" />
+                  {img.url ? (
+                    <Image
+                      src={img.url}
+                      alt={img.alt}
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <ProductSilhouette variant={variant} animationDelayMs={0} className="h-[75%]" />
+                  )}
                 </button>
               </li>
             ))}
