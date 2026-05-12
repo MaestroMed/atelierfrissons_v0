@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { WishlistButton } from '@/components/shop/WishlistButton';
@@ -21,6 +22,10 @@ export interface ProductCardPreviewData {
   compareAtPriceCents?: number | null;
   collection: ProductCollection;
   badge?: string;
+  /** URL de l'image hero produit (Vue 1, 4:5). Si absent → silhouette placeholder. */
+  imageUrl?: string | null;
+  /** Alt text descriptif WCAG-conforme. Requis si `imageUrl` fourni. */
+  imageAlt?: string;
 }
 
 interface ProductCardPreviewProps {
@@ -40,7 +45,7 @@ interface ProductCardPreviewProps {
  * Les images réelles seront servies depuis `/images/products/{slug}/01-hero.webp`
  * une fois les rendus GPT Image 2 livrés (cf. docs/IMAGE_PROMPTS_PRODUCTS.md).
  */
-export function ProductCardPreview({ product, className }: ProductCardPreviewProps) {
+export function ProductCardPreview({ product, className, priority = false }: ProductCardPreviewProps) {
   const isDark = product.collection === 'lui' || product.collection === 'nuit';
   const collectionLabel = COLLECTION_LABELS[product.collection];
   const hasCompareAt =
@@ -66,8 +71,18 @@ export function ProductCardPreview({ product, className }: ProductCardPreviewPro
           isDark ? 'bg-noir' : 'bg-ivoire-light',
         )}
       >
-        {/* Slot image — placeholder élégant tant que les rendus ne sont pas générés. */}
-        <PreviewSilhouette dark={isDark} />
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.imageAlt ?? `${product.name} — ${product.tagline}`}
+            fill
+            priority={priority}
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+          />
+        ) : (
+          <PreviewSilhouette dark={isDark} />
+        )}
 
         {product.badge ? (
           <span
