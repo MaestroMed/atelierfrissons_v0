@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductSilhouette } from '@/components/marketing/ProductSilhouette';
@@ -143,12 +144,27 @@ export function ProductGalleryLightbox({
             isNuit ? 'bg-rouge' : 'bg-ivoire-light',
           )}
         >
-          <ProductSilhouette variant={variant} className="h-[80%] max-h-[580px]" />
+          {images[activeIndex]?.url ? (
+            <Image
+              src={images[activeIndex].url}
+              alt={images[activeIndex].alt}
+              fill
+              priority
+              sizes="(min-width: 768px) 640px, 90vw"
+              className="object-contain"
+            />
+          ) : (
+            <ProductSilhouette variant={variant} className="h-[80%] max-h-[580px]" />
+          )}
           <span
             aria-hidden="true"
             className={cn(
-              'font-display absolute right-4 bottom-4 text-xs tracking-[0.3em]',
-              isNuit ? 'text-or' : 'text-or-dark',
+              'font-display pointer-events-none absolute right-4 bottom-4 text-xs tracking-[0.3em]',
+              images[activeIndex]?.url
+                ? 'bg-noir/55 supports-backdrop-filter:bg-noir/35 text-ivoire/85 supports-backdrop-filter:backdrop-blur-sm px-2 py-1'
+                : isNuit
+                  ? 'text-or'
+                  : 'text-or-dark',
             )}
           >
             ATELIER FRISSON · AF
@@ -211,7 +227,11 @@ export function ProductGalleryLightbox({
                       isNuit ? 'bg-rouge/40' : 'bg-ivoire-dark/30',
                     )}
                   >
-                    <ProductSilhouette variant={variant} className="h-[70%]" />
+                    {img.url ? (
+                      <Image src={img.url} alt={img.alt} fill sizes="64px" className="object-cover" />
+                    ) : (
+                      <ProductSilhouette variant={variant} className="h-[70%]" />
+                    )}
                   </button>
                 </li>
               );

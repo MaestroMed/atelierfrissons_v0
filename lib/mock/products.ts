@@ -1,4 +1,5 @@
 import type { Product, Category } from '@/lib/db/schema';
+import { getProductVisuals, productGallery } from '@/lib/assets/atelier-frisson-visuals';
 
 /**
  * Données produit / catégorie placeholder — pivot V2 « Couples 30-50 »
@@ -87,10 +88,22 @@ const CAT_ACCESSOIRES = MOCK_CATEGORIES[3]!.id;
 
 /**
  * Génère les 5 vues standardisées (Hero / 3-4 angle / Macro / Packaging /
- * Lifestyle). Les fichiers seront produits via `docs/IMAGE_PROMPTS_PRODUCTS.md`
- * et déposés dans `public/images/products/{slug}/{view}.webp`.
+ * Lifestyle).
+ *
+ * Si le slug a des visuels Higgsfield disponibles dans le manifest
+ * (`lib/assets/atelier-frisson-visuals.ts`), ils sont utilisés directement
+ * (URLs CloudFront 4K générées via nano_banana_2).
+ *
+ * Sinon, fallback sur les paths placeholder locaux `/images/products/{slug}/`
+ * — à remplacer au Sprint 7 par seed CJ + Supabase Storage.
  */
 function fiveViews(slug: string, name: string): Product['images'] {
+  // 1. Slug couvert par le manifest visuel Atelier Frisson ?
+  const visual = getProductVisuals(slug);
+  if (visual && visual.hero.url) {
+    return productGallery(visual);
+  }
+  // 2. Fallback paths locaux (placeholders Sprint 1).
   const views = [
     { suffix: '01-hero', alt: `${name} — vue principale`, w: 2400, h: 3000 },
     { suffix: '02-angle', alt: `${name} — vue 3/4`, w: 2400, h: 2400 },

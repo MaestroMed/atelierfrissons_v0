@@ -5,9 +5,8 @@ import { Fleuron } from '@/components/layout/Fleuron';
 import {
   getLoyaltyBalanceAction,
   getLoyaltyHistoryAction,
-  LOYALTY_RATE_REDEEM,
-  LOYALTY_MIN_REDEEM,
 } from '@/lib/loyalty/actions';
+import { LOYALTY_RATE_REDEEM, LOYALTY_MIN_REDEEM } from '@/lib/loyalty/constants';
 import { formatPriceCents, formatDate } from '@/lib/format';
 
 export const metadata: Metadata = {

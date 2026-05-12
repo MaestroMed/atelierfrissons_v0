@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 /**
  * Cron — relance des paniers abandonnés.
  *
- * Schedule recommandé : toutes les 4 heures (cron `0 */4 * * *`).
+ * Schedule recommandé : toutes les 4 heures (cron `0 *\/4 * * *`).
  * Cible : carts modifiés il y a 24h-48h, customer identifié (email connu),
  * pas encore de checkout terminé.
  *

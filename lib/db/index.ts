@@ -17,20 +17,19 @@ import * as schema from './schema';
 
 type DrizzleDatabase = PostgresJsDatabase<typeof schema>;
 
-const DATABASE_URL = process.env.DATABASE_URL;
-
 declare global {
   var __af_db_client: ReturnType<typeof postgres> | undefined;
   var __af_db: DrizzleDatabase | undefined;
 }
 
 function buildClient() {
-  if (!DATABASE_URL) {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
     throw new Error(
       'DATABASE_URL est requis. Configurez-le dans `.env.local` (pooler Transaction Supabase port 6543 avec ?pgbouncer=true).',
     );
   }
-  return postgres(DATABASE_URL, {
+  return postgres(url, {
     prepare: false,
     max: 10,
     idle_timeout: 20,
@@ -38,14 +37,38 @@ function buildClient() {
   });
 }
 
-const client = globalThis.__af_db_client ?? buildClient();
-const database: DrizzleDatabase = globalThis.__af_db ?? drizzle(client, { schema, casing: 'snake_case' });
-
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.__af_db_client = client;
-  globalThis.__af_db = database;
+/**
+ * Lazy initialization du singleton DB.
+ *
+ * On évite d'instancier le client au top-level pour ne pas crasher l'import
+ * du module quand `DATABASE_URL` n'est pas défini (cas du build Next 16 qui
+ * collecte la config des pages sans secrets dispo). Le client est créé à la
+ * première requête, donc on échoue seulement si la DB est vraiment requise
+ * — pas dès l'import.
+ */
+function getDatabase(): DrizzleDatabase {
+  if (globalThis.__af_db) return globalThis.__af_db;
+  const client = globalThis.__af_db_client ?? buildClient();
+  const database = drizzle(client, { schema, casing: 'snake_case' });
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.__af_db_client = client;
+    globalThis.__af_db = database;
+  }
+  return database;
 }
 
 export { schema };
-export const db: DrizzleDatabase = database;
+
+/**
+ * Singleton DB exposé en `Proxy` paresseux : le client n'est créé qu'à la
+ * première utilisation. Permet aux imports en chaîne (server actions, queries)
+ * de fonctionner même quand `DATABASE_URL` n'est pas défini en build.
+ */
+export const db: DrizzleDatabase = new Proxy({} as DrizzleDatabase, {
+  get(_target, prop, receiver) {
+    const real = getDatabase() as unknown as Record<PropertyKey, unknown>;
+    const value = Reflect.get(real, prop, receiver);
+    return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(real) : value;
+  },
+});
 export type Database = DrizzleDatabase;

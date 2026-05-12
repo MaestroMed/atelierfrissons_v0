@@ -3,6 +3,11 @@
 import { z } from 'zod';
 import { logAuditEvent } from '@/lib/audit/log';
 import { requireSession } from '@/lib/auth/session';
+import {
+  LOYALTY_RATE_REDEEM,
+  LOYALTY_MIN_REDEEM,
+  LOYALTY_EXPIRY_MONTHS,
+} from './constants';
 
 /**
  * Server Actions — Programme fidélité Atelier Frisson.
@@ -20,13 +25,9 @@ import { requireSession } from '@/lib/auth/session';
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CONSTANTES MÉTIER
+// CONSTANTES MÉTIER → voir `./constants.ts` (extraites pour respecter la
+// contrainte Next 16 `'use server';` = exports = async functions uniquement).
 // ─────────────────────────────────────────────────────────────────────────────
-
-export const LOYALTY_RATE_EARN = 1; // 1 € → 1 point
-export const LOYALTY_RATE_REDEEM = 0.05; // 100 points → 5 € (5 %)
-export const LOYALTY_MIN_REDEEM = 100; // pas de redemption sous 100 points
-export const LOYALTY_EXPIRY_MONTHS = 12;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SCHEMAS
@@ -45,7 +46,7 @@ const ApplyPointsSchema = z.object({
 // RESULT TYPES
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type ActionResult<T = void> =
+type ActionResult<T = void> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
